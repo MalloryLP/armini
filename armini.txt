@@ -1,0 +1,29 @@
+SETUP{
+    PIN{
+        new LED1 : 9, OUTPUT
+        new PIN1 : 8, INPUT
+    }
+
+    ADC{
+        new ANALOG1 : A0, INPUT
+        new ANALOG2 : A1, INPUT
+    }
+
+    SPI{
+        SPI1 : 13, 12, 11
+        new C1 : 10
+        new C2 : 9
+    }
+
+    I2C{
+        I2C1 : 19, 18
+        new SLAVE1 : 0x13
+        new SLAVE2 : 0x27
+    }
+}
+
+PROGRAM{
+
+}
+
+
