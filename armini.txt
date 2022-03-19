@@ -20,6 +20,10 @@ SETUP{
         new SLAVE1 : 0x13
         new SLAVE2 : 0x27
     }
+
+    SERIAL{
+        9600
+    }
 }
 
 PROGRAM{

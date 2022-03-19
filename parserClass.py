@@ -38,7 +38,7 @@ class Parser:
     
     def parse_setup(self):
         setup = astClass.Setup()
-        while self.showNext().kind in ["PIN", "ADC", "SPI", "I2C"]:
+        while self.showNext().kind in ["PIN", "ADC", "SPI", "I2C", "SERIAL"]:
             setup.instances.append(self.parse_instantiation())
         return setup
 
@@ -55,6 +55,8 @@ class Parser:
             instance = astClass.Instance(CMP, self.parse_SPI())
         elif CMP == "I2C":
             instance = astClass.Instance(CMP, self.parse_I2C())
+        elif CMP == "SERIAL":
+            instance = astClass.Instance(CMP, self.parse_SERIAL())
         return instance
             
     def parse_PIN(self):
@@ -84,6 +86,14 @@ class Parser:
         body = self.parse_I2C_declarations()
         self.expect("RBRACE")
         return body
+
+    def parse_SERIAL(self):
+        self.acceptIt()
+        declaration = astClass.SERIALType()
+        self.expect("LBRACE")
+        declaration.baud = astClass.IntLit(self.expect("INTEGER_LIT"))
+        self.expect("RBRACE")
+        return declaration
 
     def parse_PIN_declarations(self):
         pin = astClass.PINType()
@@ -166,3 +176,5 @@ class Parser:
         self.expect("COLON")
         slave.addr = astClass.AdressLit(self.expect("ADRESS_LIT"))
         return slave
+
+    

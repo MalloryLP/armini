@@ -11,6 +11,7 @@ regexExpressions = [
     (r'ADC\b', 'ADC'),
     (r'SPI\b', 'SPI'),
     (r'I2C\b', 'I2C'),
+    (r'SERIAL\b', 'SERIAL'),
     (r'INPUT\b', 'INPUT'),
     (r'OUTPUT\b', 'OUTPUT'),
     (r'HIGH\b', 'HIGH'),

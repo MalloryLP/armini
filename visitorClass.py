@@ -46,6 +46,10 @@ class Visitor:
         for slave in type.slaves:
             self.visit(slave)
 
+    def visitSERIALType(self, type):
+        self.print += "\n\t\t"
+        self.visit(type.baud)
+
     def visitPINDeclaration(self, declaration):
         self.code.append(declaration.new)
         self.print += "\n\t\t" + declaration.new + " "

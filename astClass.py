@@ -46,6 +46,10 @@ class I2CType(ASTNode):
         self.declaration = declaration
         self.slaves = slaves
 
+class SERIALType(ASTNode):
+    def __init__(self, baud = None):
+        self.baud = baud
+
 class PINDeclaration(ASTNode):
     def __init__(self, new = None, ident = None, pin = None, level = None):
         self.new = new
