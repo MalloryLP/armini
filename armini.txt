@@ -1,12 +1,12 @@
 SETUP{
     PIN{
-        new LED1 : 9, OUTPUT
-        new PIN1 : 8, INPUT
+        new LED1 : 1, OUTPUT
+        new LED2 : 3, OUTPUT
+        new PIN1 : 3, INPUT
     }
 
     ADC{
         new ANALOG1 : A0, INPUT
-        new ANALOG2 : A1, INPUT
     }
 
     SPI{
@@ -24,9 +24,35 @@ SETUP{
     SERIAL{
         9600
     }
+
 }
 
 PROGRAM{
+
+    int pc = 0
+    float index = 1.6
+
+    LOOP{
+
+        if(ANALOG1 < 512){
+            SERIAL(ANALOG1)
+            LED1 to LOW
+        }else{
+            SERIAL(ANALOG1)
+            LED1 to HIGH
+        }
+
+        if(PIN1 == 1){
+            LED2 to LOW
+        }else{
+            LED2 to HIGH
+        }
+
+        while(pc < 10){
+            pc = pc +1
+        }
+
+    }
 
 }
 
