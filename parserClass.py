@@ -32,6 +32,7 @@ class Parser:
         self.expect("RBRACE")
         self.expect("PROGRAM")
         self.expect("LBRACE")
+        print(self.showNext().kind)
         program.main = self.parse_main()
         self.expect("RBRACE")
         return program
@@ -43,7 +44,45 @@ class Parser:
         return setup
 
     def parse_main(self):
-        pass
+        main = astClass.Main()
+        while self.showNext().kind in ["INT", "FLOAT", "CHAR"]:
+            main.declarations.append(self.parse_declaration())
+        return main
+
+    def parse_declaration(self):
+        CMP = self.showNext()
+        if CMP.kind == "INT":
+            declaration = astClass.Declaration(CMP.value, self.parse_int())
+        elif CMP.kind == "FLOAT":
+            declaration = astClass.Declaration(CMP.value, self.parse_float())
+        elif CMP.kind == "CHAR":
+            declaration = astClass.Declaration(CMP.value, self.parse_char())
+        return declaration
+    
+    def parse_int(self):
+        self.acceptIt()
+        int_type = astClass.IntType()
+        int_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("ASSIGN")
+        int_type.value = astClass.IntLit(self.expect("INTEGER_LIT"))
+        return int_type
+
+    def parse_float(self):
+        self.acceptIt()
+        float_type = astClass.FloatType()
+        float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("ASSIGN")
+        float_type.value = astClass.FloatLit(self.expect("FLOAT_LIT"))
+        return float_type
+
+    def parse_char(self):
+        self.acceptIt()
+        float_type = astClass.CharType()
+        float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("ASSIGN")
+        print(self.showNext().kind)
+        float_type.value = astClass.CharLit(self.expect("CHAR_LIT"))
+        return float_type
 
     def parse_instantiation(self):
         CMP = self.showNext().kind

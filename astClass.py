@@ -1,9 +1,11 @@
+from ast import AST
 import re
 
 class ASTNode:
     def accept(self, next):
         class_name_camel_case = self.__class__.__name__
         method_name = getattr(next, "visit" + class_name_camel_case)
+        print(class_name_camel_case)
         method_name(self)
 
 class Program(ASTNode):
@@ -14,6 +16,16 @@ class Program(ASTNode):
 class Setup(ASTNode):
     def __init__(self, instances = []):
         self.instances = instances
+
+class Main(ASTNode):
+    def __init__(self, declarations = [], loop = None):
+        self.declarations = declarations
+        self.loop = loop
+
+class Declaration(ASTNode):
+    def __init__(self, type = None, body = None):
+        self.type = type
+        self.body = body
 
 class Instance(ASTNode):
     def __init__(self, type = None, body = None):
@@ -97,6 +109,14 @@ class IntLit(ASTNode):
     def __init__(self, token):
         self.token = token
 
+class FloatLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
+class CharLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
 class AnalogLit(ASTNode):
     def __init__(self, token):
         self.token = token
@@ -108,3 +128,18 @@ class AdressLit(ASTNode):
 class LevelLit(ASTNode):
     def __init__(self, token):
         self.token = token
+
+class IntType(ASTNode):
+    def __init__(self, ident = None, value = None):
+        self.ident = ident
+        self.value = value
+
+class FloatType(ASTNode):
+    def __init__(self, ident = None, value = None):
+        self.ident = ident
+        self.value = value
+
+class CharType(ASTNode):
+    def __init__(self, ident = None, value = None):
+        self.ident = ident
+        self.value = value

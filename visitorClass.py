@@ -1,3 +1,6 @@
+from traceback import print_tb
+
+
 class Visitor:
     def __init__(self):
         self.code = [] #variable d'instance qui récupère tous les mots clés (useless)
@@ -8,6 +11,7 @@ class Visitor:
 
     def pp(self, program):
         self.visitProgram(program)
+        print(self.code)
         print("\n============ PRETTY PRINTER ============\n")
         print(self.print)
         print("\n========== END PRETTY PRINTER ==========\n")
@@ -16,12 +20,43 @@ class Visitor:
         self.code.append("SETUP")
         self.print += "SETUP{"
         self.visit(program.setup)
-        #self.visit(program.main)
+        self.print += "\n}"
+        self.code.append("PROGRAM")
+        self.print += "\nPROGRAM{\n"
+        self.visit(program.main)
+        self.print += "\n}"
         
     def visitSetup(self, setup):
         for instance in setup.instances:
             self.visit(instance)
             self.print += "\n\t}"
+
+    def visitMain(self, main):
+        for declaration in main.declarations:
+            self.visit(declaration)
+    
+    def visitDeclaration(self, declaration):
+        self.code.append(declaration.type)
+        self.print += "\t" + declaration.type + " "
+        self.visit(declaration.body)
+
+    def visitIntType(self, type):
+        self.visit(type.ident)
+        self.print += "= "
+        self.visit(type.value)
+        self.print += "\n"
+
+    def visitFloatType(self, type):
+        self.visit(type.ident)
+        self.print += "= "
+        self.visit(type.value)
+        self.print += "\n"
+
+    def visitCharType(self, type):
+        self.visit(type.ident)
+        self.print += "= "
+        self.visit(type.value)
+        self.print += "\n"
 
     def visitInstance(self, instance):
         self.code.append(instance.type)
@@ -96,6 +131,14 @@ class Visitor:
     def visitIntLit(self, int):
         self.code.append(int.token)
         self.print += int.token + " "
+
+    def visitFloatLit(self, float):
+        self.code.append(float.token)
+        self.print += float.token + " "
+
+    def visitCharLit(self, char):
+        self.code.append(char.token)
+        self.print += char.token + " "
 
     def visitAnalogLit(self, analog):
         self.code.append(analog.token)

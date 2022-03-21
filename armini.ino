@@ -12,7 +12,7 @@ void setup(){
     pinMode(LED2, OUTPUT);
     pinMode(PIN1, INPUT_PULLUP);
 
-    pinMode(ANALOG1, INPUT);
+    pinMode(ANALOG1, INPUT_PULL);
 
 }
 

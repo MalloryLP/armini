@@ -29,30 +29,10 @@ SETUP{
 
 PROGRAM{
 
+    int test = 2
+    float x = 3.2
     int pc = 0
-    float index = 1.6
-
-    LOOP{
-
-        if(ANALOG1 < 512){
-            SERIAL(ANALOG1)
-            LED1 to LOW
-        }else{
-            SERIAL(ANALOG1)
-            LED1 to HIGH
-        }
-
-        if(PIN1 == 1){
-            LED2 to LOW
-        }else{
-            LED2 to HIGH
-        }
-
-        while(pc < 10){
-            pc = pc +1
-        }
-
-    }
+    char pc = "a"
 
 }
 

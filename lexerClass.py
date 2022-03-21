@@ -54,7 +54,7 @@ regexExpressions = [
     (r'[a-zA-Z][a-zA-Z0-9]*', 'IDENTIFIER'),
     (r'\d+\.\d+', 'FLOAT_LIT'),
     (r'\d+', 'INTEGER_LIT'),
-    (r'\'[^\"]*\'', 'CHAR_LIT')
+    (r'\"[^\"]*\"', 'CHAR_LIT')
     
 ]
 
