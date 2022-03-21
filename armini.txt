@@ -34,6 +34,33 @@ PROGRAM{
     int pc = 0
     char pc = "a"
 
+    LOOP{
+
+        if(ANALOG1 < 512){
+            SERIAL(ANALOG1)
+            LED1 to LOW
+            pc = pc + 3
+        }else{
+            SERIAL(ANALOG1)
+            LED1 to HIGH
+        }
+
+        test = test + 2
+
+        if(PIN1 == 1){
+            LED2 to LOW
+        }else{
+            LED2 to HIGH
+        }
+
+
+
+        while(pc < 10){
+            pc = pc +1
+        }
+
+    }
+
 }
 
 
