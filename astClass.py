@@ -18,9 +18,14 @@ class Setup(ASTNode):
         self.instances = instances
 
 class Main(ASTNode):
-    def __init__(self, declarations = [], loop = None):
+    def __init__(self, declarations = [], statements = []):
         self.declarations = declarations
-        self.loop = loop
+        self.statements = statements
+
+class Statement(ASTNode):
+    def __init__(self, type = None, body = None):
+        self.type = type
+        self.body = body
 
 class Declaration(ASTNode):
     def __init__(self, type = None, body = None):
@@ -113,6 +118,14 @@ class FloatLit(ASTNode):
     def __init__(self, token):
         self.token = token
 
+class TrueLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
+class FalseLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
 class CharLit(ASTNode):
     def __init__(self, token):
         self.token = token
@@ -143,3 +156,33 @@ class CharType(ASTNode):
     def __init__(self, ident = None, value = None):
         self.ident = ident
         self.value = value
+
+class BoolType(ASTNode):
+    def __init__(self, ident = None, value = None):
+        self.ident = ident
+        self.value = value
+
+class If(ASTNode):
+    def __init__(self, cond = None, block = None, else_ = None):
+        self.cond = cond 
+        self.block = block
+        self.else_ = else_
+
+class Binary(ASTNode):
+    def __init__(self, lhs = None, op = None, rhs = None):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
+
+class Unary(ASTNode):
+    def __init__(self, op = None, e = None):
+        self.op = op
+        self.e = e
+
+class Parenth(ASTNode):
+    def __init__(self, e):
+        self.e = e
+
+class Block(ASTNode):
+    def __init__(self, statements = []):
+        self.statements = statements

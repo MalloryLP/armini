@@ -18,6 +18,7 @@ class Parser:
 
     def acceptIt(self):
         self.tokens = self.tokens[1:]
+        return self.tokens
 
     def parse(self, tokens):
         self.tokens = tokens
@@ -32,7 +33,6 @@ class Parser:
         self.expect("RBRACE")
         self.expect("PROGRAM")
         self.expect("LBRACE")
-        print(self.showNext().kind)
         program.main = self.parse_main()
         self.expect("RBRACE")
         return program
@@ -47,7 +47,135 @@ class Parser:
         main = astClass.Main()
         while self.showNext().kind in ["INT", "FLOAT", "CHAR"]:
             main.declarations.append(self.parse_declaration())
+        self.expect("LOOP")
+        self.expect("LBRACE")
+        main.statements = self.parse_statements(main.statements)
         return main
+
+    def parse_statements(self, statements):
+        while self.showNext().kind in ["IF"]:
+            statements.append(self.parse_statement())
+        return statements
+
+    def parse_statement(self):
+        CMP = self.showNext()
+        if CMP.kind == "IF":
+            statement = astClass.Statement(CMP.value, self.parse_if())
+        return statement
+
+    def parse_if(self):
+        if_ = astClass.If()
+        self.acceptIt()
+        self.expect("LPAREN")
+        if_.cond = self.parse_expression()
+        self.expect("RPAREN")
+        if_.block = self.parse_block()
+        if self.showNext().kind == "ELSE":
+            self.acceptIt()
+            if_.else_ = self.parse_statement()
+        return if_
+
+    def parse_expression(self):
+        binary = astClass.Binary()
+        print("ICI")
+        binary.lhs = self.parse_conjuction()
+        while self.showNext().kind  == "DBAR":
+            binary.op = self.acceptIt().kind
+            binary.rhs = self.parse_conjuction()
+        return binary
+
+    def parse_conjuction(self):
+        binary = astClass.Binary()
+        binary.lhs = self.parse_equality()
+        while self.showNext().kind  == "DAMPER":
+            binary.op = self.acceptIt().kind
+            binary.rhs = self.parse_equality()
+        return binary
+
+    def parse_equality(self):
+        binary = astClass.Binary()
+        binary.lhs = self.parse_relation()
+        while self.showNext().kind  in ["DEQ", "NEQ"]:
+            binary.op = self.acceptIt().kind
+            binary.rhs = self.parse_relation()
+        return binary
+
+    def parse_relation(self):
+        binary = astClass.Binary()
+        binary.lhs = self.parse_addition()
+        while self.showNext().kind  in ["LT", "LTE", "GT", "GTE"]:
+            binary.op = self.acceptIt().kind
+            binary.rhs = self.parse_addition()
+        return binary
+
+    def parse_addition(self):
+        binary = astClass.Binary()
+        binary.lhs = self.parse_term()
+        while self.showNext().kind  in ["ADD", "SUB"]:
+            binary.op = self.acceptIt().kind
+            binary.rhs = self.parse_term()
+        return binary
+
+    def parse_term(self):
+        binary = astClass.Binary()
+        binary.lhs = self.parse_factor()
+        while self.showNext().kind  in ["MUL", "DIV"]:
+            binary.op = self.acceptIt().kind
+            binary.rhs = self.parse_factor()
+        return binary
+
+    def parse_factor(self):
+        unary = astClass.Unary()
+        while self.showNext().kind  in ["SUB", "EXCL"]:
+            unary.op = self.acceptIt().kind
+        unary.e = self.parse_primary()
+        return unary
+
+    def parse_primary(self):
+        CMP = self.showNext().kind
+        if CMP == "INDENT":
+            primary = astClass.Ident(self.acceptIt())
+        elif CMP in ["INTEGER_LIT", "TRUE_LIT", "FALSE_LIT", "CHAR_LIT"]:
+            if CMP == "INTEGER_LIT":
+                primary = astClass.IntLit(self.acceptIt())
+            elif CMP == "TRUE_LIT":
+                primary = astClass.TrueLit(self.acceptIt())
+            elif CMP == "FALSE_LIT":
+                primary = astClass.FalseLit(self.acceptIt())
+            elif CMP == "CHAR_LIT":
+                primary = astClass.CharLit(self.acceptIt())
+        elif CMP == "LPAREN":
+            self.acceptIt()
+            e = self.parse_expression()
+            self.expect("RPAREN")
+            primary = astClass.Parenth(e)
+            return primary
+        elif CMP in ["INT", "FLOAT", "CHAR"]:
+            type = self.parse_type()
+            self.expect("LPAREN")
+            e = self.parse_expression()
+            self.expect("RPAREN")
+            primary = astClass.Cast()
+            return primary
+
+    def parse_type(self):
+        CMP = self.showNext()
+        if CMP.kind == "INT":
+            type = astClass.IntType(value = CMP.value)
+        elif CMP.kind == "FLOAT":
+            type = astClass.FloatType(value = CMP.value)
+        elif CMP.kind == "CHAR":
+            type = astClass.CharType(value = CMP.value)
+        elif CMP.kind == "BOOL":
+            type = astClass.BoolType(value = CMP.value)
+        return type
+
+    def parse_block(self):
+        block = astClass.Block()
+        self.expect("LBRACE")
+        block.statements = self.parse_statements()
+        self.expect("RBRACE")
+        return block
 
     def parse_declaration(self):
         CMP = self.showNext()
@@ -80,7 +208,6 @@ class Parser:
         float_type = astClass.CharType()
         float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
-        print(self.showNext().kind)
         float_type.value = astClass.CharLit(self.expect("CHAR_LIT"))
         return float_type
 
