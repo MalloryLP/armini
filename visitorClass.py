@@ -59,7 +59,17 @@ class Visitor:
             for block in if_.else_:
                 self.visit(block)
             self.print += "\t\t}\n"
-    
+
+    def visitSETpin(self, declaration):
+        self.code.append(declaration.set)
+        self.print += "\n\t\t" + declaration.set + " "
+        self.visit(declaration.ident)
+        self.print += "to"
+        self.print += " "
+        self.visit(declaration.level)
+  
+
+   
     def visitCond(self, cond):
         self.code.append(cond.lhs)
         self.print += "( "

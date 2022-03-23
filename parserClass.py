@@ -49,7 +49,7 @@ class Parser:
             main.declarations.append(self.parse_declaration())
         self.expect("LOOP")
         self.expect("LBRACE")
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER"]:
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "READ", "SET"]:
             main.statements.append(self.parse_statement())
         self.expect("RBRACE")
         return main
@@ -64,6 +64,8 @@ class Parser:
             statement = astClass.Statement(body = self.parse_assignation())
         elif CMP.kind == "READ":
             statement = astClass.Statement(CMP.value, self.parse_analog_read())
+        elif CMP.kind == "SET":
+            statement = astClass.Statement(CMP.value, self.parse_set_pin())
         return statement
 
     def parse_if(self):
@@ -82,6 +84,8 @@ class Parser:
             self.expect("RBRACE")
         return if_
 
+   
+    
     def parse_cond(self):
         cond = astClass.Cond()
         CMP = self.showNext()
@@ -115,7 +119,7 @@ class Parser:
 
     def parse_block(self):
         block = []
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "READ"]:
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "READ", "SET"]:
             print(self.showNext().kind)
             block.append(self.parse_statement())
         return block
@@ -165,6 +169,18 @@ class Parser:
         self.acceptIt()
         analog = astClass.Ident(self.expect("IDENTIFIER"))
         return analog
+
+    def parse_set_pin(self):
+        set_led = astClass.SETpin()
+        set_led.set = self.expect("SET")
+        set_led.ident = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("TO")
+        if self.showNext().kind in ["HIGH", "LOW"]:
+            set_led.level = astClass.LevelLit(self.showNext().kind)
+            self.acceptIt()
+        return set_led
+
+
         
     '''
     def parse_statements(self, statements):

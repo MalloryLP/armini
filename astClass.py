@@ -73,6 +73,12 @@ class PINDeclaration(ASTNode):
         self.pin = pin
         self.level = level
 
+class SETpin(ASTNode):
+    def __init__(self, set = None, ident = None, level = None):
+        self.set = set
+        self.ident = ident
+        self.level = level
+
 class ADCDeclaration(ASTNode):
     def __init__(self, new = None, ident = None, pin = None, level = None):
         self.new = new
@@ -166,6 +172,7 @@ class If(ASTNode):
         self.cond = cond 
         self.block = block
         self.else_ = else_
+
 
 class Binary(ASTNode):
     def __init__(self, lhs = None, op = None, rhs = None):
