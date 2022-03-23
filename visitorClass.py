@@ -34,7 +34,47 @@ class Visitor:
     def visitMain(self, main):
         for declaration in main.declarations:
             self.visit(declaration)
+        self.code.append("LOOP")
+        self.print += "\n\tLOOP{\n"
+        for statement in main.statements:
+            self.visit(statement)
+        self.print += "\n\t}\n"
+
+    def visitStatement(self, statement):
+        self.code.append(statement.type)
+        self.print += "\t\t" + statement.type
+        self.visit(statement.body)
+
+    def visitIf(self, if_):
+        self.visit(if_.cond)
+        for block in if_.block:
+            self.visit(block)
+        self.print += "\t\t}"
+        if if_.else_ is not None:
+            self.print += "else{\n"
+            for block in if_.else_:
+                self.visit(block)
+            self.print += "\t\t}\n"
     
+    def visitCond(self, cond):
+        self.code.append(cond.lhs)
+        self.print += "( "
+        self.visit(cond.lhs)
+        self.visit(cond.op)
+        self.visit(cond.rhs)
+        self.print += "){\n"
+
+    def visitAssignation(self, assign):
+        self.visit(assign.lhs)
+        self.visit(assign.op)
+        self.visit(assign.rhs)
+
+    def visitExpression(self, exp):
+        self.visit(exp.lhs)
+        self.visit(exp.op)
+        self.visit(exp.rhs)
+        self.print += "\n"
+
     def visitDeclaration(self, declaration):
         self.code.append(declaration.type)
         self.print += "\t" + declaration.type + " "
@@ -149,6 +189,10 @@ class Visitor:
         self.print += addr.token + " "
 
     def visitLevelLit(self, level):
+        self.code.append(level.token)
+        self.print += level.token + " "
+
+    def visitOpLit(self, level):
         self.code.append(level.token)
         self.print += level.token + " "
     

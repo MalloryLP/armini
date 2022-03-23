@@ -27,7 +27,6 @@ regexExpressions = [
     (r'char\b', 'CHAR'),
     (r'bool\b', 'BOOL'),
     (r'float\b', 'FLOAT'),
-    (r'\!', 'EXCL'),
     (r'\(', 'LPAREN'),
     (r'\)', 'RPAREN'),
     (r'\{', 'LBRACE'),

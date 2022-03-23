@@ -5,7 +5,6 @@ class ASTNode:
     def accept(self, next):
         class_name_camel_case = self.__class__.__name__
         method_name = getattr(next, "visit" + class_name_camel_case)
-        print(class_name_camel_case)
         method_name(self)
 
 class Program(ASTNode):
@@ -23,7 +22,7 @@ class Main(ASTNode):
         self.statements = statements
 
 class Statement(ASTNode):
-    def __init__(self, type = None, body = None):
+    def __init__(self, type = "", body = None):
         self.type = type
         self.body = body
 
@@ -186,3 +185,25 @@ class Parenth(ASTNode):
 class Block(ASTNode):
     def __init__(self, statements = []):
         self.statements = statements
+
+class Cond(ASTNode):
+    def __init__(self, lhs = None, op = None, rhs = None):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
+
+class OpLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
+class Assignation(ASTNode):
+    def __init__(self, lhs = None, op = None, rhs = None):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
+
+class Expression(ASTNode):
+    def __init__(self, lhs = None, op = None, rhs = None):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs

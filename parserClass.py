@@ -42,16 +42,121 @@ class Parser:
         while self.showNext().kind in ["PIN", "ADC", "SPI", "I2C", "SERIAL"]:
             setup.instances.append(self.parse_instantiation())
         return setup
-
+    
     def parse_main(self):
         main = astClass.Main()
         while self.showNext().kind in ["INT", "FLOAT", "CHAR"]:
             main.declarations.append(self.parse_declaration())
         self.expect("LOOP")
         self.expect("LBRACE")
-        main.statements = self.parse_statements(main.statements)
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER"]:
+            main.statements.append(self.parse_statement())
+        self.expect("RBRACE")
         return main
 
+    def parse_statement(self):
+        CMP = self.showNext()
+        if CMP.kind == "IF":
+            statement = astClass.Statement(CMP.value, self.parse_if())
+        elif CMP.kind == "WHILE":
+            statement = astClass.Statement(CMP.value, self.parse_while())
+        elif CMP.kind == "IDENTIFIER":
+            statement = astClass.Statement(body = self.parse_assignation())
+        return statement
+
+    def parse_if(self):
+        if_ = astClass.If()
+        self.acceptIt()
+        self.expect("LPAREN")
+        if_.cond = self.parse_cond()
+        self.expect("RPAREN")
+        self.expect("LBRACE")
+        if_.block = self.parse_block()
+        self.expect("RBRACE")
+        if self.showNext().kind == "ELSE":
+            self.acceptIt()
+            self.expect("LBRACE")
+            if_.else_ = self.parse_block()
+            self.expect("RBRACE")
+        return if_
+
+    def parse_cond(self):
+        cond = astClass.Cond()
+        CMP = self.showNext()
+        if CMP.kind == "IDENTIFIER":
+            self.acceptIt()
+            cond.lhs = astClass.Ident(CMP.value)
+        elif CMP.kind == "INTEGER_LIT":
+            self.acceptIt()
+            cond.lhs = astClass.IntLit(CMP.value)
+        else:
+            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
+            exit()
+        CMP = self.showNext()
+        if CMP.kind in ["DEQ", "NEQ", "GTE", "GT", "LTE", "LT"]:
+            self.acceptIt()
+            cond.op = astClass.OpLit(CMP.value)
+        else:
+            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
+            exit()
+        CMP = self.showNext()
+        if CMP.kind == "IDENTIFIER":
+            self.acceptIt()
+            cond.rhs = astClass.Ident(CMP.value)
+        elif CMP.kind == "INTEGER_LIT":
+            self.acceptIt()
+            cond.rhs = astClass.IntLit(CMP.value)
+        else:
+            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
+            exit()
+        return cond
+
+    def parse_block(self):
+        block = []
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER"]:
+            block.append(self.parse_statement())
+        return block
+
+    def parse_assignation(self):
+        assignation = astClass.Assignation()
+        assignation.lhs = astClass.Ident(self.expect("IDENTIFIER"))
+        assignation.op = astClass.OpLit(self.expect("ASSIGN"))
+        assignation.rhs = self.parse_expression()
+        return assignation
+
+    def parse_expression(self):
+        exp = astClass.Expression()
+        CMP = self.showNext()
+        if CMP.kind == "IDENTIFIER":
+            self.acceptIt()
+            exp.lhs = astClass.Ident(CMP.value)
+        elif CMP.kind == "INTEGER_LIT":
+            self.acceptIt()
+            exp.lhs = astClass.IntLit(CMP.value)
+        else:
+            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
+            exit()
+        CMP = self.showNext()
+        if CMP.kind in ["ADD", "MUL", "SUB", "DIV"]:
+            self.acceptIt()
+            exp.op = astClass.OpLit(CMP.value)
+        else:
+            print("ICI")
+            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
+            exit()
+        CMP = self.showNext()
+        if CMP.kind == "IDENTIFIER":
+            self.acceptIt()
+            exp.rhs = astClass.Ident(CMP.value)
+        elif CMP.kind == "INTEGER_LIT":
+            self.acceptIt()
+            exp.rhs = astClass.IntLit(CMP.value)
+        else:
+            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
+            exit()
+        return exp
+        
+    '''
     def parse_statements(self, statements):
         while self.showNext().kind in ["IF"]:
             statements.append(self.parse_statement())
@@ -77,7 +182,6 @@ class Parser:
 
     def parse_expression(self):
         binary = astClass.Binary()
-        print("ICI")
         binary.lhs = self.parse_conjuction()
         while self.showNext().kind  == "DBAR":
             binary.op = self.acceptIt().kind
@@ -157,7 +261,7 @@ class Parser:
             self.expect("RPAREN")
             primary = astClass.Cast()
             return primary
-
+    
     def parse_type(self):
         CMP = self.showNext()
         if CMP.kind == "INT":
@@ -176,7 +280,7 @@ class Parser:
         block.statements = self.parse_statements()
         self.expect("RBRACE")
         return block
-
+    '''
     def parse_declaration(self):
         CMP = self.showNext()
         if CMP.kind == "INT":

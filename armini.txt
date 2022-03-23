@@ -35,10 +35,14 @@ PROGRAM{
     char pc = "a"
 
     LOOP{
-
-        if(a == b){
-
+        if(12 != 12){
+            test = test + 1
+            toto = 25 + 1
+        }else{
+            tutu = 7 + 2
         }
+
+        
 
     }
 
