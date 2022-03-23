@@ -8,6 +8,8 @@ regexExpressions = [
     (r'PROGRAM\b', 'PROGRAM'),
     (r'LOOP\b', 'LOOP'),
     (r'new\b', 'new'),
+    (r'read\b', 'READ'),
+    (r'set\b', 'SET'),
     (r'PIN\b', 'PIN'),
     (r'ADC\b', 'ADC'),
     (r'SPI\b', 'SPI'),

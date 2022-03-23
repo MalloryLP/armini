@@ -36,10 +36,12 @@ PROGRAM{
 
     LOOP{
         if(12 != 12){
-            test = test + 1
-            toto = 25 + 1
+            toto = 3 + toto
+            truc = 4
+            truc = toto
+            read ANALOG1
         }else{
-            tutu = 7 + 2
+            tutu = 7 + kjbsdvkjs
         }
 
         

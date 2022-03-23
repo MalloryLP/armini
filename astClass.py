@@ -22,7 +22,7 @@ class Main(ASTNode):
         self.statements = statements
 
 class Statement(ASTNode):
-    def __init__(self, type = "", body = None):
+    def __init__(self, type = None, body = None):
         self.type = type
         self.body = body
 

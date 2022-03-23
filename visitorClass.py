@@ -42,14 +42,18 @@ class Visitor:
 
     def visitStatement(self, statement):
         self.code.append(statement.type)
-        self.print += "\t\t" + statement.type
+        if statement.type is not None:
+            self.print += "\t\t" + statement.type
+        else:
+            self.print += "\t\t"
         self.visit(statement.body)
 
     def visitIf(self, if_):
         self.visit(if_.cond)
         for block in if_.block:
+            self.print += "\n\t\t"
             self.visit(block)
-        self.print += "\t\t}"
+        self.print += "\n\t\t}"
         if if_.else_ is not None:
             self.print += "else{\n"
             for block in if_.else_:
@@ -68,11 +72,14 @@ class Visitor:
         self.visit(assign.lhs)
         self.visit(assign.op)
         self.visit(assign.rhs)
+        self.print += "\n"
 
     def visitExpression(self, exp):
         self.visit(exp.lhs)
-        self.visit(exp.op)
-        self.visit(exp.rhs)
+        if exp.op is not None:
+            self.visit(exp.op)
+        if exp.rhs is not None:
+            self.visit(exp.rhs)
         self.print += "\n"
 
     def visitDeclaration(self, declaration):

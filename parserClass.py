@@ -62,6 +62,8 @@ class Parser:
             statement = astClass.Statement(CMP.value, self.parse_while())
         elif CMP.kind == "IDENTIFIER":
             statement = astClass.Statement(body = self.parse_assignation())
+        elif CMP.kind == "READ":
+            statement = astClass.Statement(CMP.value, self.parse_analog_read())
         return statement
 
     def parse_if(self):
@@ -113,7 +115,8 @@ class Parser:
 
     def parse_block(self):
         block = []
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER"]:
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "READ"]:
+            print(self.showNext().kind)
             block.append(self.parse_statement())
         return block
 
@@ -137,11 +140,13 @@ class Parser:
             print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
             exit()
         CMP = self.showNext()
+        if CMP.kind in ["IDENTIFIER", "RBRACE", "READ", "SET", "SERIAL"]:
+            return exp
+        CMP = self.showNext()
         if CMP.kind in ["ADD", "MUL", "SUB", "DIV"]:
             self.acceptIt()
             exp.op = astClass.OpLit(CMP.value)
         else:
-            print("ICI")
             print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
             exit()
         CMP = self.showNext()
@@ -155,6 +160,11 @@ class Parser:
             print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
             exit()
         return exp
+
+    def parse_analog_read(self):
+        self.acceptIt()
+        analog = astClass.Ident(self.expect("IDENTIFIER"))
+        return analog
         
     '''
     def parse_statements(self, statements):
