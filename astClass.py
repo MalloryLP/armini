@@ -79,6 +79,11 @@ class SETpin(ASTNode):
         self.ident = ident
         self.level = level
 
+class SETSerial(ASTNode):
+    def __init__(self, serial = None, baud = None):
+        self.serial = serial
+        self.baud = baud
+
 class ADCDeclaration(ASTNode):
     def __init__(self, new = None, ident = None, pin = None, level = None):
         self.new = new

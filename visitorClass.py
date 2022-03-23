@@ -67,6 +67,12 @@ class Visitor:
         self.print += "to"
         self.print += " "
         self.visit(declaration.level)
+
+    def visitSETSerial(self, serial):
+        self.code.append(serial.serial)
+        self.print += "("
+        self.visit(serial.baud)
+        self.print += ")"
   
 
    
