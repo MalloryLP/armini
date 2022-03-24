@@ -51,33 +51,41 @@ class Visitor:
     def visitIf(self, if_):
         self.visit(if_.cond)
         for block in if_.block:
-            self.print += "\n\t\t"
+            self.print += "\n\t\t\t"
             self.visit(block)
-        self.print += "\n\t\t}"
+        self.print += "}"
         if if_.else_ is not None:
             self.print += "else{\n"
             for block in if_.else_:
                 self.visit(block)
             self.print += "\t\t}\n"
+    
+    def visitWhile(self, while_):
+        self.visit(while_.cond)
+        for block in while_.block:
+            self.print += "\n\t\t"
+            self.visit(block)
+        self.print += "\n\t\t}"
+        
 
-    def visitSETpin(self, declaration):
+    def visitSetPin(self, declaration):
         self.code.append(declaration.set)
-        self.print += "\n\t\t" + declaration.set + " "
+        self.print += " "
         self.visit(declaration.ident)
         self.print += "to"
         self.print += " "
         self.visit(declaration.level)
 
-    def visitSETSerial(self, serial):
+    def visitPrintSerial(self, serial):
         self.code.append(serial.serial)
         self.print += "("
-        self.visit(serial.baud)
+        self.visit(serial.ident)
         self.print += ")"
+        self.print += "\n"
   
 
    
     def visitCond(self, cond):
-        self.code.append(cond.lhs)
         self.print += "( "
         self.visit(cond.lhs)
         self.visit(cond.op)
@@ -103,24 +111,13 @@ class Visitor:
         self.print += "\t" + declaration.type + " "
         self.visit(declaration.body)
 
-    def visitIntType(self, type):
+    def visitType(self, type):
         self.visit(type.ident)
         self.print += "= "
         self.visit(type.value)
         self.print += "\n"
 
-    def visitFloatType(self, type):
-        self.visit(type.ident)
-        self.print += "= "
-        self.visit(type.value)
-        self.print += "\n"
-
-    def visitCharType(self, type):
-        self.visit(type.ident)
-        self.print += "= "
-        self.visit(type.value)
-        self.print += "\n"
-
+   
     def visitInstance(self, instance):
         self.code.append(instance.type)
         self.print += "\n\t" + instance.type + "{"

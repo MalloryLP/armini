@@ -73,16 +73,16 @@ class PINDeclaration(ASTNode):
         self.pin = pin
         self.level = level
 
-class SETpin(ASTNode):
+class SetPin(ASTNode):
     def __init__(self, set = None, ident = None, level = None):
         self.set = set
         self.ident = ident
         self.level = level
 
-class SETSerial(ASTNode):
-    def __init__(self, serial = None, baud = None):
+class PrintSerial(ASTNode):
+    def __init__(self, serial = None, ident = None):
         self.serial = serial
-        self.baud = baud
+        self.ident = ident
 
 class ADCDeclaration(ASTNode):
     def __init__(self, new = None, ident = None, pin = None, level = None):
@@ -152,17 +152,7 @@ class LevelLit(ASTNode):
     def __init__(self, token):
         self.token = token
 
-class IntType(ASTNode):
-    def __init__(self, ident = None, value = None):
-        self.ident = ident
-        self.value = value
-
-class FloatType(ASTNode):
-    def __init__(self, ident = None, value = None):
-        self.ident = ident
-        self.value = value
-
-class CharType(ASTNode):
+class Type(ASTNode):
     def __init__(self, ident = None, value = None):
         self.ident = ident
         self.value = value
@@ -177,6 +167,12 @@ class If(ASTNode):
         self.cond = cond 
         self.block = block
         self.else_ = else_
+
+class While(ASTNode):
+    def __init__(self, cond = None, block = None):
+        self.cond = cond 
+        self.block = block
+        
 
 
 class Binary(ASTNode):

@@ -18,8 +18,8 @@ class Compiler:
         visitor = self.arminiPP.pp(ast)
         print("Visitor with Pretty Printer analysis successful.")
         print(self.arminiPP.code)
-        visitor = self.arduinoPP.pp(ast)
-        print("Visitor with Pretty Printer analysis successful.")
+        #visitor = self.arduinoPP.pp(ast)
+        #print("Visitor with Pretty Printer analysis successful.")
         
 
 compiler = Compiler()

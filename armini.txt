@@ -35,20 +35,20 @@ PROGRAM{
     char pc = "a"
 
     LOOP{
-        if(12 != 12){
+        if(12 == 12){
             toto = 3 + toto
             truc = 4
             truc = toto
             read ANALOG1
             set LED1 to HIGH
-            SERIAL(ANALOG1)
+            serial(ANALOG1)
             
         }else{
             tutu = 7 + kjbsdvkjs
         }
 
         read ANALOG1
-        SERIAL(ANALOG1)
+        serial(ANALOG1)
 
 
         if(12 != 12){
@@ -59,6 +59,14 @@ PROGRAM{
             
         }else{
             tutu = 7 + kjbsdvkjs
+        }
+
+        while (12 >= 12)
+        {
+            toto = 3 + toto
+            truc = 4
+            truc = toto
+            read ANALOG1
         }
         
 
