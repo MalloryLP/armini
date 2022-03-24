@@ -113,7 +113,7 @@ class Parser:
             print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
             exit()
         CMP = self.showNext()
-        if CMP.kind in ["DEQ", "NEQ", "GTE", "GT", "LTE", "LT", "DBAR"]:
+        if CMP.kind in ["DEQ", "NEQ", "GTE", "GT", "LTE", "LT"]:
             self.acceptIt()
             cond.op = astClass.OpLit(CMP.value)
         else:
