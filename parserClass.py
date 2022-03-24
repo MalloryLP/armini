@@ -49,7 +49,7 @@ class Parser:
             main.declarations.append(self.parse_declaration())
         self.expect("LOOP")
         self.expect("LBRACE")
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "read", "set", "serial"]:
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER"]:
             main.statements.append(self.parse_statement())
         self.expect("RBRACE")
         return main
@@ -61,13 +61,9 @@ class Parser:
         elif CMP.kind == "WHILE":
             statement = astClass.Statement(CMP.value, self.parse_while())
         elif CMP.kind == "IDENTIFIER":
-            statement = self.parse_assignation()
-        elif CMP.kind == "read":
+            statement = astClass.Statement(body = self.parse_assignation())
+        elif CMP.kind == "READ":
             statement = astClass.Statement(CMP.value, self.parse_analog_read())
-        elif CMP.kind == "set":
-            statement = astClass.Statement(CMP.value, self.parse_set_pin())
-        elif CMP.kind == "serial":
-            statement = astClass.Statement(CMP.value, self.parse_serial())
         return statement
 
     def parse_if(self):
@@ -86,20 +82,6 @@ class Parser:
             self.expect("RBRACE")
         return if_
 
-    def parse_while(self):
-        while_ = astClass.If()
-        self.acceptIt()
-        self.expect("LPAREN")
-        while_.cond = self.parse_cond()
-        self.expect("RPAREN")
-        self.expect("LBRACE")
-        while_.block = self.parse_block()
-        self.expect("RBRACE")
-        return while_
-
-
-   
-    
     def parse_cond(self):
         cond = astClass.Cond()
         CMP = self.showNext()
@@ -133,7 +115,7 @@ class Parser:
 
     def parse_block(self):
         block = []
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "read", "set", "serial"]:
+        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "READ"]:
             print(self.showNext().kind)
             block.append(self.parse_statement())
         return block
@@ -158,7 +140,7 @@ class Parser:
             print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
             exit()
         CMP = self.showNext()
-        if CMP.kind in ["IDENTIFIER", "RBRACE", "read", "set", "SERIAL"]:
+        if CMP.kind in ["IDENTIFIER", "RBRACE", "READ", "SET", "SERIAL"]:
             return exp
         CMP = self.showNext()
         if CMP.kind in ["ADD", "MUL", "SUB", "DIV"]:
@@ -183,26 +165,6 @@ class Parser:
         self.acceptIt()
         analog = astClass.Ident(self.expect("IDENTIFIER"))
         return analog
-
-    def parse_set_pin(self):
-        set_led = astClass.SetPin()
-        set_led.set = self.expect("set")
-        set_led.ident = astClass.Ident(self.expect("IDENTIFIER"))
-        self.expect("TO")
-        if self.showNext().kind in ["HIGH", "LOW"]:
-            set_led.level = astClass.LevelLit(self.showNext().kind)
-            self.acceptIt()
-        return set_led
-
-    def parse_serial(self):
-        serial = astClass.PrintSerial()
-        serial.serial = self.expect("serial")
-        self.expect("LPAREN")
-        serial.ident = astClass.Ident(self.expect("IDENTIFIER"))
-        self.expect("RPAREN")
-        return serial
-
-
         
     '''
     def parse_statements(self, statements):
@@ -341,7 +303,7 @@ class Parser:
     
     def parse_int(self):
         self.acceptIt()
-        int_type = astClass.Type()
+        int_type = astClass.IntType()
         int_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
         int_type.value = astClass.IntLit(self.expect("INTEGER_LIT"))
@@ -349,7 +311,7 @@ class Parser:
 
     def parse_float(self):
         self.acceptIt()
-        float_type = astClass.Type()
+        float_type = astClass.FloatType()
         float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
         float_type.value = astClass.FloatLit(self.expect("FLOAT_LIT"))
@@ -357,7 +319,7 @@ class Parser:
 
     def parse_char(self):
         self.acceptIt()
-        float_type = astClass.Type()
+        float_type = astClass.CharType()
         float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
         float_type.value = astClass.CharLit(self.expect("CHAR_LIT"))

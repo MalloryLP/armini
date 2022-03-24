@@ -2,7 +2,7 @@ SETUP{
     PIN{
         new LED1 : 1, OUTPUT
         new LED2 : 3, OUTPUT
-        new PIN1 : 3, INPUT
+        new PIN1 : 4, INPUT
     }
 
     ADC{
@@ -35,40 +35,14 @@ PROGRAM{
     char pc = "a"
 
     LOOP{
-        if(12 == 12){
-            toto = 3 + toto
-            truc = 4
-            truc = toto
-            read ANALOG1
-            set LED1 to HIGH
-            serial(ANALOG1)
-            
-        }else{
-            tutu = 7 + kjbsdvkjs
-        }
-
-        read ANALOG1
-        serial(ANALOG1)
-
-
         if(12 != 12){
             toto = 3 + toto
             truc = 4
             truc = toto
             read ANALOG1
-            
         }else{
             tutu = 7 + kjbsdvkjs
         }
-
-        while (12 >= 12)
-        {
-            toto = 3 + toto
-            truc = 4
-            truc = toto
-            read ANALOG1
-        }
-        
 
         
 
