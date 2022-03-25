@@ -26,6 +26,12 @@ class Statement(ASTNode):
         self.type = type
         self.body = body
 
+class Type(ASTNode):
+    def __init__(self, ident = None, array = None, value = None):
+        self.ident = ident
+        self.array = array
+        self.value = value
+
 class Declaration(ASTNode):
     def __init__(self, type = None, body = None):
         self.type = type
@@ -166,6 +172,12 @@ class If(ASTNode):
         self.cond = cond 
         self.block = block
         self.else_ = else_
+
+class While(ASTNode):
+    def __init__(self, cond = None, block = None, else_ = None):
+        self.cond = cond 
+        self.block = block
+        
 
 class Binary(ASTNode):
     def __init__(self, lhs = None, op = None, rhs = None):

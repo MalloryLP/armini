@@ -113,6 +113,10 @@ class Visitor:
 
     def visitType(self, type):
         self.visit(type.ident)
+        if type.array is not None:
+            self.print += "["
+            self.visit(type.array)
+            self.print += "]"
         self.print += "= "
         self.visit(type.value)
         self.print += "\n"

@@ -33,6 +33,7 @@ PROGRAM{
     float x = 3.2
     int pc = 0
     char pc = "a"
+    int tab[2] = 3
 
     LOOP{
         if(12 != 12){
@@ -44,6 +45,13 @@ PROGRAM{
             tutu = 7 + kjbsdvkjs
         }
 
+        while(12 != 12)
+        {
+            toto = 3 + toto
+            truc = 4
+            truc = toto
+            read ANALOG1
+        }
         
 
     }

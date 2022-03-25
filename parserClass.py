@@ -82,6 +82,17 @@ class Parser:
             self.expect("RBRACE")
         return if_
 
+    def parse_while(self):
+        while_ = astClass.While()
+        self.acceptIt()
+        self.expect("LPAREN")
+        while_.cond = self.parse_cond()
+        self.expect("RPAREN")
+        self.expect("LBRACE")
+        while_.block = self.parse_block()
+        self.expect("RBRACE")
+        return while_
+
     def parse_cond(self):
         cond = astClass.Cond()
         CMP = self.showNext()
@@ -303,15 +314,20 @@ class Parser:
     
     def parse_int(self):
         self.acceptIt()
-        int_type = astClass.IntType()
+        int_type = astClass.Type()
         int_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
+        if self.showNext().kind == "LBRACK":
+            self.acceptIt()
+            int_type.array = astClass.IntLit(self.expect("INTEGER_LIT"))
+            print(int_type.array)
+            self.expect("RBRACK")
         self.expect("ASSIGN")
         int_type.value = astClass.IntLit(self.expect("INTEGER_LIT"))
         return int_type
 
     def parse_float(self):
         self.acceptIt()
-        float_type = astClass.FloatType()
+        float_type = astClass.Type()
         float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
         float_type.value = astClass.FloatLit(self.expect("FLOAT_LIT"))
@@ -319,7 +335,7 @@ class Parser:
 
     def parse_char(self):
         self.acceptIt()
-        float_type = astClass.CharType()
+        float_type = astClass.Type()
         float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
         float_type.value = astClass.CharLit(self.expect("CHAR_LIT"))
