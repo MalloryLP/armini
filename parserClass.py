@@ -25,7 +25,7 @@ class Parser:
         ast = self.parse_program()
         return ast
     
-    def parse_program(self, level=0):
+    def parse_program(self):
         program = astClass.Program()
         self.expect("SETUP")
         self.expect("LBRACE")
@@ -40,437 +40,155 @@ class Parser:
     def parse_setup(self):
         setup = astClass.Setup()
         while self.showNext().kind in ["PIN", "ADC", "SPI", "I2C", "SERIAL"]:
-            setup.instances.append(self.parse_instantiation())
+            setup.instances.append(self.parse_instantiations())
         return setup
     
     def parse_main(self):
         main = astClass.Main()
-        while self.showNext().kind in ["INT", "FLOAT", "CHAR"]:
-            main.declarations.append(self.parse_declaration())
-        self.expect("LOOP")
-        self.expect("LBRACE")
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER"]:
-            main.statements.append(self.parse_statement())
-        self.expect("RBRACE")
+        while self.showNext().kind in ["INT", "CHAR", "FLOAT"]:
+            main.dcls.append(self.parse_type_declarations())
         return main
 
-    def parse_statement(self):
-        CMP = self.showNext()
-        if CMP.kind == "IF":
-            statement = astClass.Statement(CMP.value, self.parse_if())
-        elif CMP.kind == "WHILE":
-            statement = astClass.Statement(CMP.value, self.parse_while())
-        elif CMP.kind == "IDENTIFIER":
-            statement = astClass.Statement(body = self.parse_assignation())
-        elif CMP.kind == "READ":
-            statement = astClass.Statement(CMP.value, self.parse_analog_read())
-        return statement
-
-    def parse_if(self):
-        if_ = astClass.If()
-        self.acceptIt()
-        self.expect("LPAREN")
-        if_.cond = self.parse_cond()
-        self.expect("RPAREN")
-        self.expect("LBRACE")
-        if_.block = self.parse_block()
-        self.expect("RBRACE")
-        if self.showNext().kind == "ELSE":
-            self.acceptIt()
-            self.expect("LBRACE")
-            if_.else_ = self.parse_block()
-            self.expect("RBRACE")
-        return if_
-
-    def parse_while(self):
-        while_ = astClass.While()
-        self.acceptIt()
-        self.expect("LPAREN")
-        while_.cond = self.parse_cond()
-        self.expect("RPAREN")
-        self.expect("LBRACE")
-        while_.block = self.parse_block()
-        self.expect("RBRACE")
-        return while_
-
-    def parse_cond(self):
-        cond = astClass.Cond()
-        CMP = self.showNext()
-        if CMP.kind == "IDENTIFIER":
-            self.acceptIt()
-            cond.lhs = astClass.Ident(CMP.value)
-        elif CMP.kind == "INTEGER_LIT":
-            self.acceptIt()
-            cond.lhs = astClass.IntLit(CMP.value)
-        else:
-            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
-            exit()
-        CMP = self.showNext()
-        if CMP.kind in ["DEQ", "NEQ", "GTE", "GT", "LTE", "LT"]:
-            self.acceptIt()
-            cond.op = astClass.OpLit(CMP.value)
-        else:
-            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
-            exit()
-        CMP = self.showNext()
-        if CMP.kind == "IDENTIFIER":
-            self.acceptIt()
-            cond.rhs = astClass.Ident(CMP.value)
-        elif CMP.kind == "INTEGER_LIT":
-            self.acceptIt()
-            cond.rhs = astClass.IntLit(CMP.value)
-        else:
-            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
-            exit()
-        return cond
-
-    def parse_block(self):
-        block = []
-        while self.showNext().kind in ["IF", "WHILE", "IDENTIFIER", "READ"]:
-            print(self.showNext().kind)
-            block.append(self.parse_statement())
-        return block
-
-    def parse_assignation(self):
-        assignation = astClass.Assignation()
-        assignation.lhs = astClass.Ident(self.expect("IDENTIFIER"))
-        assignation.op = astClass.OpLit(self.expect("ASSIGN"))
-        assignation.rhs = self.parse_expression()
-        return assignation
-
-    def parse_expression(self):
-        exp = astClass.Expression()
-        CMP = self.showNext()
-        if CMP.kind == "IDENTIFIER":
-            self.acceptIt()
-            exp.lhs = astClass.Ident(CMP.value)
-        elif CMP.kind == "INTEGER_LIT":
-            self.acceptIt()
-            exp.lhs = astClass.IntLit(CMP.value)
-        else:
-            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
-            exit()
-        CMP = self.showNext()
-        if CMP.kind in ["IDENTIFIER", "RBRACE", "READ", "SET", "SERIAL"]:
-            return exp
-        CMP = self.showNext()
-        if CMP.kind in ["ADD", "MUL", "SUB", "DIV"]:
-            self.acceptIt()
-            exp.op = astClass.OpLit(CMP.value)
-        else:
-            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
-            exit()
-        CMP = self.showNext()
-        if CMP.kind == "IDENTIFIER":
-            self.acceptIt()
-            exp.rhs = astClass.Ident(CMP.value)
-        elif CMP.kind == "INTEGER_LIT":
-            self.acceptIt()
-            exp.rhs = astClass.IntLit(CMP.value)
-        else:
-            print("EXPECT ERROR : syntaxe error line : " + str(self.showNext().position))
-            exit()
-        return exp
-
-    def parse_analog_read(self):
-        self.acceptIt()
-        analog = astClass.Ident(self.expect("IDENTIFIER"))
-        return analog
-        
-    '''
-    def parse_statements(self, statements):
-        while self.showNext().kind in ["IF"]:
-            statements.append(self.parse_statement())
-        return statements
-
-    def parse_statement(self):
-        CMP = self.showNext()
-        if CMP.kind == "IF":
-            statement = astClass.Statement(CMP.value, self.parse_if())
-        return statement
-
-    def parse_if(self):
-        if_ = astClass.If()
-        self.acceptIt()
-        self.expect("LPAREN")
-        if_.cond = self.parse_expression()
-        self.expect("RPAREN")
-        if_.block = self.parse_block()
-        if self.showNext().kind == "ELSE":
-            self.acceptIt()
-            if_.else_ = self.parse_statement()
-        return if_
-
-    def parse_expression(self):
-        binary = astClass.Binary()
-        binary.lhs = self.parse_conjuction()
-        while self.showNext().kind  == "DBAR":
-            binary.op = self.acceptIt().kind
-            binary.rhs = self.parse_conjuction()
-        return binary
-
-    def parse_conjuction(self):
-        binary = astClass.Binary()
-        binary.lhs = self.parse_equality()
-        while self.showNext().kind  == "DAMPER":
-            binary.op = self.acceptIt().kind
-            binary.rhs = self.parse_equality()
-        return binary
-
-    def parse_equality(self):
-        binary = astClass.Binary()
-        binary.lhs = self.parse_relation()
-        while self.showNext().kind  in ["DEQ", "NEQ"]:
-            binary.op = self.acceptIt().kind
-            binary.rhs = self.parse_relation()
-        return binary
-
-    def parse_relation(self):
-        binary = astClass.Binary()
-        binary.lhs = self.parse_addition()
-        while self.showNext().kind  in ["LT", "LTE", "GT", "GTE"]:
-            binary.op = self.acceptIt().kind
-            binary.rhs = self.parse_addition()
-        return binary
-
-    def parse_addition(self):
-        binary = astClass.Binary()
-        binary.lhs = self.parse_term()
-        while self.showNext().kind  in ["ADD", "SUB"]:
-            binary.op = self.acceptIt().kind
-            binary.rhs = self.parse_term()
-        return binary
-
-    def parse_term(self):
-        binary = astClass.Binary()
-        binary.lhs = self.parse_factor()
-        while self.showNext().kind  in ["MUL", "DIV"]:
-            binary.op = self.acceptIt().kind
-            binary.rhs = self.parse_factor()
-        return binary
-
-    def parse_factor(self):
-        unary = astClass.Unary()
-        while self.showNext().kind  in ["SUB", "EXCL"]:
-            unary.op = self.acceptIt().kind
-        unary.e = self.parse_primary()
-        return unary
-
-    def parse_primary(self):
+    def parse_type_declarations(self):
         CMP = self.showNext().kind
-        if CMP == "INDENT":
-            primary = astClass.Ident(self.acceptIt())
-        elif CMP in ["INTEGER_LIT", "TRUE_LIT", "FALSE_LIT", "CHAR_LIT"]:
-            if CMP == "INTEGER_LIT":
-                primary = astClass.IntLit(self.acceptIt())
-            elif CMP == "TRUE_LIT":
-                primary = astClass.TrueLit(self.acceptIt())
-            elif CMP == "FALSE_LIT":
-                primary = astClass.FalseLit(self.acceptIt())
-            elif CMP == "CHAR_LIT":
-                primary = astClass.CharLit(self.acceptIt())
-        elif CMP == "LPAREN":
-            self.acceptIt()
-            e = self.parse_expression()
-            self.expect("RPAREN")
-            primary = astClass.Parenth(e)
-            return primary
-        elif CMP in ["INT", "FLOAT", "CHAR"]:
-            type = self.parse_type()
-            self.expect("LPAREN")
-            e = self.parse_expression()
-            self.expect("RPAREN")
-            primary = astClass.Cast()
-            return primary
-    
-    def parse_type(self):
-        CMP = self.showNext()
-        if CMP.kind == "INT":
-            type = astClass.IntType(value = CMP.value)
-        elif CMP.kind == "FLOAT":
-            type = astClass.FloatType(value = CMP.value)
-        elif CMP.kind == "CHAR":
-            type = astClass.CharType(value = CMP.value)
-        elif CMP.kind == "BOOL":
-            type = astClass.BoolType(value = CMP.value)
-        return type
-
-    def parse_block(self):
-        block = astClass.Block()
-        self.expect("LBRACE")
-        block.statements = self.parse_statements()
-        self.expect("RBRACE")
-        return block
-    '''
-    def parse_declaration(self):
-        CMP = self.showNext()
-        if CMP.kind == "INT":
-            declaration = astClass.Declaration(CMP.value, self.parse_int())
-        elif CMP.kind == "FLOAT":
-            declaration = astClass.Declaration(CMP.value, self.parse_float())
-        elif CMP.kind == "CHAR":
-            declaration = astClass.Declaration(CMP.value, self.parse_char())
+        if CMP == "INT":
+            declaration = self.parse_int_declarations()
+        if CMP == "CHAR":
+            declaration = self.parse_char_declarations()
+        if CMP == "FLOAT":
+            declaration = self.parse_float_declarations()
         return declaration
-    
-    def parse_int(self):
-        self.acceptIt()
-        int_type = astClass.Type()
-        int_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
-        if self.showNext().kind == "LBRACK":
-            self.acceptIt()
-            int_type.array = astClass.IntLit(self.expect("INTEGER_LIT"))
-            print(int_type.array)
-            self.expect("RBRACK")
-        self.expect("ASSIGN")
-        int_type.value = astClass.IntLit(self.expect("INTEGER_LIT"))
-        return int_type
 
-    def parse_float(self):
-        self.acceptIt()
-        float_type = astClass.Type()
-        float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
+    def parse_int_declarations(self):
+        var = astClass.Declaration()
+        var.type = astClass.Ident(self.expect("INT"))
+        var.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
-        float_type.value = astClass.FloatLit(self.expect("FLOAT_LIT"))
-        return float_type
+        var.value = astClass.IntLit(self.expect("INTEGER_LIT"))
+        return var
 
-    def parse_char(self):
-        self.acceptIt()
-        float_type = astClass.Type()
-        float_type.ident = astClass.Ident(self.expect("IDENTIFIER"))
+    def parse_char_declarations(self):
+        var = astClass.Declaration()
+        var.type = astClass.Ident(self.expect("CHAR"))
+        var.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("ASSIGN")
-        float_type.value = astClass.CharLit(self.expect("CHAR_LIT"))
-        return float_type
+        var.value = astClass.CharLit(self.expect("CHAR_LIT"))
+        return var
 
-    def parse_instantiation(self):
+    def parse_float_declarations(self):
+        var = astClass.Declaration()
+        var.type = astClass.Ident(self.expect("FLOAT"))
+        var.name = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("ASSIGN")
+        var.value = astClass.FloatLit(self.expect("FLOAT_LIT"))
+        return var
+
+    def parse_instantiations(self):
         CMP = self.showNext().kind
         if CMP == "PIN":
-            instance = astClass.Instance(CMP, self.parse_PIN())
-        elif CMP == "ADC":
-            instance = astClass.Instance(CMP, self.parse_ADC())
-        elif CMP == "SPI":
-            instance = astClass.Instance(CMP, self.parse_SPI())
-        elif CMP == "I2C":
-            instance = astClass.Instance(CMP, self.parse_I2C())
-        elif CMP == "SERIAL":
-            instance = astClass.Instance(CMP, self.parse_SERIAL())
+            self.acceptIt()
+            instance = self.parse_pins_declaration()
+        if CMP == "ADC":
+            self.acceptIt()
+            instance = self.parse_adcs_declaration()
+        if CMP == "SPI":
+            self.acceptIt()
+            instance = self.parse_spis_declaration()
+        if CMP == "I2C":
+            self.acceptIt()
+            instance = self.parse_i2cs_declaration()
+        if CMP == "SERIAL":
+            self.acceptIt()
+            instance = self.parse_serial_declaration()
         return instance
-            
-    def parse_PIN(self):
-        self.acceptIt()
-        self.expect("LBRACE")
-        body = self.parse_PIN_declarations()
-        self.expect("RBRACE")
-        return body
-
-    def parse_ADC(self):
-        self.acceptIt()
-        self.expect("LBRACE")
-        body = self.parse_ADC_declarations()
-        self.expect("RBRACE")
-        return body
     
-    def parse_SPI(self):
-        self.acceptIt()
+    def parse_pins_declaration(self):
+        pin = astClass.PinInstance()
         self.expect("LBRACE")
-        body = self.parse_SPI_declarations()
-        self.expect("RBRACE")
-        return body
-
-    def parse_I2C(self):
-        self.acceptIt()
-        self.expect("LBRACE")
-        body = self.parse_I2C_declarations()
-        self.expect("RBRACE")
-        return body
-
-    def parse_SERIAL(self):
-        self.acceptIt()
-        declaration = astClass.SERIALType()
-        self.expect("LBRACE")
-        declaration.baud = astClass.IntLit(self.expect("INTEGER_LIT"))
-        self.expect("RBRACE")
-        return declaration
-
-    def parse_PIN_declarations(self):
-        pin = astClass.PINType()
         while self.showNext().kind == "new":
-            pin.declarations.append(self.parse_PIN_declaration())
+            pin.dcls.append(self.parse_pin_declaration())
+        self.expect("RBRACE")
         return pin
 
-    def parse_PIN_declaration(self):
-        declaration = astClass.PINDeclaration()
-        declaration.new = self.expect("new")
-        declaration.ident = astClass.Ident(self.expect("IDENTIFIER"))
+    def parse_adcs_declaration(self):
+        adc = astClass.AdcInstance()
+        self.expect("LBRACE")
+        while self.showNext().kind == "new":
+            adc.dcls.append(self.parse_adc_declaration())
+        self.expect("RBRACE")
+        return adc
+
+    def parse_spis_declaration(self):
+        spi = astClass.SpiInstance()
+        self.expect("LBRACE")
+        spi.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("COLON")
-        declaration.pin = astClass.IntLit(self.expect("INTEGER_LIT"))
+        spi.SCK = astClass.IntLit(self.expect("INTEGER_LIT"))
+        self.expect("COMMA")
+        spi.MISO = astClass.IntLit(self.expect("INTEGER_LIT"))
+        self.expect("COMMA")
+        spi.MOSI = astClass.IntLit(self.expect("INTEGER_LIT"))
+        while self.showNext().kind == "new":
+            spi.dcls.append(self.parse_spi_declaration())
+        self.expect("RBRACE")
+        return spi
+
+    def parse_i2cs_declaration(self):
+        spi = astClass.I2cInstance()
+        self.expect("LBRACE")
+        spi.name = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("COLON")
+        spi.SCK = astClass.IntLit(self.expect("INTEGER_LIT"))
+        self.expect("COMMA")
+        spi.SCL = astClass.IntLit(self.expect("INTEGER_LIT"))
+        while self.showNext().kind == "new":
+            spi.dcls.append(self.parse_i2c_declaration())
+        self.expect("RBRACE")
+        return spi
+    
+    def parse_pin_declaration(self):
+        declaration = astClass.Pin()
+        self.expect("new")
+        declaration.name = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("COLON")
+        declaration.nb = astClass.IntLit(self.expect("INTEGER_LIT"))
         self.expect("COMMA")
         if self.showNext().kind in ["OUTPUT", "INPUT"]:
-            declaration.level = astClass.LevelLit(self.showNext().kind)
+            declaration.level = astClass.Ident(self.showNext().kind)
             self.acceptIt()
         return declaration
 
-    def parse_ADC_declarations(self):
-        adc = astClass.ADCType()
-        while self.showNext().kind == "new":
-            adc.declarations.append(self.parse_ADC_declaration())
-        return adc
-
-    def parse_ADC_declaration(self):
-        declaration = astClass.PINDeclaration()
-        declaration.new = self.expect("new")
-        declaration.ident = astClass.Ident(self.expect("IDENTIFIER"))
+    def parse_adc_declaration(self):
+        declaration = astClass.Adc()
+        self.expect("new")
+        declaration.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("COLON")
-        declaration.pin = astClass.AnalogLit(self.expect("ANALOG_LIT"))
+        declaration.nb = astClass.AnalogLit(self.expect("ANALOG_LIT"))
         self.expect("COMMA")
-        declaration.level = astClass.LevelLit(self.expect("INPUT"))
+        if self.showNext().kind in ["OUTPUT", "INPUT"]:
+            declaration.level = astClass.Ident(self.showNext().kind)
+            self.acceptIt()
         return declaration
 
-    def parse_SPI_declarations(self):
-        spi = astClass.SPIType(self.parse_SPI_declaration(), [])
-        while self.showNext().kind == "new":
-            spi.cs.append(self.parse_SPI_component())
-        return spi
-        
-    def parse_SPI_declaration(self):
-        declaration = astClass.SPIDeclaration()
-        declaration.ident = astClass.Ident(self.expect("IDENTIFIER"))
+    def parse_spi_declaration(self):
+        declaration = astClass.Componant()
+        self.expect("new")
+        declaration.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("COLON")
-        declaration.SCK = astClass.IntLit(self.expect("INTEGER_LIT"))
-        self.expect("COMMA")
-        declaration.MOSI = astClass.IntLit(self.expect("INTEGER_LIT"))
-        self.expect("COMMA")
-        declaration.MISO = astClass.IntLit(self.expect("INTEGER_LIT"))
+        declaration.nb = astClass.IntLit(self.expect("INTEGER_LIT"))
         return declaration
 
-    def parse_SPI_component(self):
-        cs = astClass.CSDeclaration()
-        cs.new = self.expect("new")
-        cs.ident = astClass.Ident(self.expect("IDENTIFIER"))
+    def parse_i2c_declaration(self):
+        declaration = astClass.Componant()
+        self.expect("new")
+        declaration.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("COLON")
-        cs.pin = astClass.Ident(self.expect("INTEGER_LIT"))
-        return cs
-
-    def parse_I2C_declarations(self):
-        i2c = astClass.I2CType(self.parse_I2C_declaration(), [])
-        while self.showNext().kind == "new":
-            i2c.slaves.append(self.parse_I2C_componant())
-        return i2c
-
-    def parse_I2C_declaration(self):
-        declaration = astClass.I2CDeclaration()
-        declaration.ident = astClass.Ident(self.expect("IDENTIFIER"))
-        self.expect("COLON")
-        declaration.SCL = astClass.IntLit(self.expect("INTEGER_LIT"))
-        self.expect("COMMA")
-        declaration.SDA = astClass.IntLit(self.expect("INTEGER_LIT"))
+        declaration.nb = astClass.AdressLit(self.expect("ADRESS_LIT"))
         return declaration
 
-    def parse_I2C_componant(self):
-        slave = astClass.SlaveDeclaration()
-        slave.new = self.expect("new")
-        slave.ident = astClass.Ident(self.expect("IDENTIFIER"))
-        self.expect("COLON")
-        slave.addr = astClass.AdressLit(self.expect("ADRESS_LIT"))
-        return slave
-
-    
+    def parse_serial_declaration(self):
+        declaration = astClass.Serial()
+        self.expect("LBRACE")
+        declaration.bauds = astClass.AdressLit(self.expect("INTEGER_LIT"))
+        self.expect("RBRACE")
+        return declaration

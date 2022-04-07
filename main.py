@@ -15,11 +15,11 @@ class Compiler:
         print("Lexer analysis successful.")
         ast = self.parser.parse(tokens)
         print("Parser analysis successful.")
-        visitor = self.arminiPP.pp(ast)
-        print("Visitor with Pretty Printer analysis successful.")
-        print(self.arminiPP.code)
-        #visitor = self.arduinoPP.pp(ast)
+        #visitor = self.arminiPP.pp(ast)
         #print("Visitor with Pretty Printer analysis successful.")
+        #print(self.arminiPP.code)
+        visitor = self.arduinoPP.pp(ast)
+        print("Visitor with Pretty Printer analysis successful.")
         
 
 compiler = Compiler()

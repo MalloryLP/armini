@@ -17,121 +17,85 @@ class Setup(ASTNode):
         self.instances = instances
 
 class Main(ASTNode):
-    def __init__(self, declarations = [], statements = []):
-        self.declarations = declarations
-        self.statements = statements
-
-class Statement(ASTNode):
-    def __init__(self, type = None, body = None):
-        self.type = type
+    def __init__(self, dcls = [], body = []):
+        self.dcls = dcls
         self.body = body
-
-class Type(ASTNode):
-    def __init__(self, ident = None, array = None, value = None):
-        self.ident = ident
-        self.array = array
-        self.value = value
 
 class Declaration(ASTNode):
-    def __init__(self, type = None, body = None):
+    def __init__(self, type = None, name = None, value = None):
         self.type = type
-        self.body = body
+        self.name = name
+        self.value = value
 
-class Instance(ASTNode):
-    def __init__(self, type = None, body = None):
-        self.type = type
-        self.body = body
+class PinInstance(ASTNode):
+    def __init__(self, dcls = []):
+        self.dcls = dcls
 
-class InstanceType(ASTNode):
-    def __init__(self, type):
-        self.type = type
+class AdcInstance(ASTNode):
+    def __init__(self, dcls = []):
+        self.dcls = dcls
 
-class SetupBody(ASTNode):
-    def __init__(self, types = []):
-        self.types = types
-
-class PINType(ASTNode):
-    def __init__(self, declarations = []):
-        self.declarations = declarations
-
-class ADCType(ASTNode):
-    def __init__(self, declarations = []):
-        self.declarations = declarations
-
-class SPIType(ASTNode):
-    def __init__(self, declaration, cs = []):
-        self.declaration = declaration
-        self.cs = cs
-
-class I2CType(ASTNode):
-    def __init__(self, declaration, slaves = []):
-        self.declaration = declaration
-        self.slaves = slaves
-
-class SERIALType(ASTNode):
-    def __init__(self, baud = None):
-        self.baud = baud
-
-class PINDeclaration(ASTNode):
-    def __init__(self, new = None, ident = None, pin = None, level = None):
-        self.new = new
-        self.ident = ident
-        self.pin = pin
-        self.level = level
-
-class ADCDeclaration(ASTNode):
-    def __init__(self, new = None, ident = None, pin = None, level = None):
-        self.new = new
-        self.ident = ident
-        self.pin = pin
-        self.level = level
-
-class SPIDeclaration(ASTNode):
-    def __init__(self, ident = None, SCK = None, MOSI = None, MISO = None):
-        self.ident = ident
+class SpiInstance(ASTNode):
+    def __init__(self, name = None, SCK = None, MOSI = None, MISO = None, dcls = []):
+        self.name = name
         self.SCK = SCK
         self.MOSI = MOSI
         self.MISO = MISO
+        self.dcls = dcls
 
-class CSDeclaration(ASTNode):
-    def __init__(self, new = None, ident = None, pin = None):
-        self.new = new
-        self.ident = ident
-        self.pin = pin
-
-class I2CDeclaration(ASTNode):
-    def __init__(self, ident = None, SCL = None, SDA = None):
-        self.ident = ident
+class I2cInstance(ASTNode):
+    def __init__(self, name = None, SCK = None, SCL = None, dcls = []):
+        self.name = name
+        self.SCK = SCK
         self.SCL = SCL
-        self.SDA = SDA
+        self.dcls = dcls
 
-class SlaveDeclaration(ASTNode):
-    def __init__(self, new = None, ident = None, addr = None):
-        self.new = new
-        self.ident = ident
-        self.addr = addr
+class Pin(ASTNode):
+    def __init__(self, name = None, nb = None, level = None):
+        self.name = name
+        self.nb = nb
+        self.level = level
+
+class Adc(ASTNode):
+    def __init__(self, name = None, nb = None, level = None):
+        self.name = name
+        self.nb = nb
+        self.level = level
+
+class Componant(ASTNode):
+    def __init__(self, name = None, nb = None):
+        self.name = name
+        self.nb = nb
+
+class Serial(ASTNode):
+    def __init__(self, bauds = None):
+        self.bauds = bauds
 
 class Ident(ASTNode):
     def __init__(self, token):
         self.token = token
 
+class Assign(ASTNode):
+    def __init__(self, lhs = None, op = None, rhs = None):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
+
+class Binary(ASTNode):
+    def __init__(self, lhs = None, op = None, rhs = None):
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
+
 class IntLit(ASTNode):
     def __init__(self, token):
         self.token = token
 
-class FloatLit(ASTNode):
-    def __init__(self, token):
-        self.token = token
-
-class TrueLit(ASTNode):
-    def __init__(self, token):
-        self.token = token
-
-class FalseLit(ASTNode):
-    def __init__(self, token):
-        self.token = token
-
 class CharLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
+class FloatLit(ASTNode):
     def __init__(self, token):
         self.token = token
 
@@ -142,80 +106,3 @@ class AnalogLit(ASTNode):
 class AdressLit(ASTNode):
     def __init__(self, token):
         self.token = token
-
-class LevelLit(ASTNode):
-    def __init__(self, token):
-        self.token = token
-
-class IntType(ASTNode):
-    def __init__(self, ident = None, value = None):
-        self.ident = ident
-        self.value = value
-
-class FloatType(ASTNode):
-    def __init__(self, ident = None, value = None):
-        self.ident = ident
-        self.value = value
-
-class CharType(ASTNode):
-    def __init__(self, ident = None, value = None):
-        self.ident = ident
-        self.value = value
-
-class BoolType(ASTNode):
-    def __init__(self, ident = None, value = None):
-        self.ident = ident
-        self.value = value
-
-class If(ASTNode):
-    def __init__(self, cond = None, block = None, else_ = None):
-        self.cond = cond 
-        self.block = block
-        self.else_ = else_
-
-class While(ASTNode):
-    def __init__(self, cond = None, block = None, else_ = None):
-        self.cond = cond 
-        self.block = block
-        
-
-class Binary(ASTNode):
-    def __init__(self, lhs = None, op = None, rhs = None):
-        self.lhs = lhs
-        self.op = op
-        self.rhs = rhs
-
-class Unary(ASTNode):
-    def __init__(self, op = None, e = None):
-        self.op = op
-        self.e = e
-
-class Parenth(ASTNode):
-    def __init__(self, e):
-        self.e = e
-
-class Block(ASTNode):
-    def __init__(self, statements = []):
-        self.statements = statements
-
-class Cond(ASTNode):
-    def __init__(self, lhs = None, op = None, rhs = None):
-        self.lhs = lhs
-        self.op = op
-        self.rhs = rhs
-
-class OpLit(ASTNode):
-    def __init__(self, token):
-        self.token = token
-
-class Assignation(ASTNode):
-    def __init__(self, lhs = None, op = None, rhs = None):
-        self.lhs = lhs
-        self.op = op
-        self.rhs = rhs
-
-class Expression(ASTNode):
-    def __init__(self, lhs = None, op = None, rhs = None):
-        self.lhs = lhs
-        self.op = op
-        self.rhs = rhs

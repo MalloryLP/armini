@@ -7,6 +7,7 @@ SETUP{
 
     ADC{
         new ANALOG1 : A0, INPUT
+        new ANALOG2 : A1, INPUT
     }
 
     SPI{
@@ -28,33 +29,9 @@ SETUP{
 }
 
 PROGRAM{
-
-    int test = 2
-    float x = 3.2
-    int pc = 0
-    char pc = "a"
-    int tab[2] = 3
-
-    LOOP{
-        if(12 != 12){
-            toto = 3 + toto
-            truc = 4
-            truc = toto
-            read ANALOG1
-        }else{
-            tutu = 7 + kjbsdvkjs
-        }
-
-        while(12 != 12)
-        {
-            toto = 3 + toto
-            truc = 4
-            truc = toto
-            read ANALOG1
-        }
-        
-
-    }
+    int test = 1
+    char index = "a"
+    float pc = 1.7
 
 }
 

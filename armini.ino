@@ -1,4 +1,4 @@
-s#define LED1 1
+#define LED1 1
 #define LED2 2
 #define PIN1 3
 
