@@ -47,6 +47,10 @@ class I2cInstance(ASTNode):
         self.SCL = SCL
         self.dcls = dcls
 
+class ServoInstance(ASTNode):
+    def __init__(self, dcls = []):
+        self.dcls = dcls
+
 class Pin(ASTNode):
     def __init__(self, name = None, nb = None, level = None):
         self.name = name
@@ -63,6 +67,16 @@ class Componant(ASTNode):
     def __init__(self, name = None, nb = None):
         self.name = name
         self.nb = nb
+
+class Servo(ASTNode):
+    def __init__(self, name = None, pin = None):
+        self.name = name
+        self.pin = pin
+
+class SendServo(ASTNode):
+    def __init__(self, name = None, data = None):
+        self.name = name
+        self.data = data
 
 class Serial(ASTNode):
     def __init__(self, bauds = None):

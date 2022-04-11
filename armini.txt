@@ -26,6 +26,11 @@ SETUP{
         9600
     }
 
+    SERVO{
+        new servo1 : 4
+        new servo2 : 5 
+    }
+
 }
 
 PROGRAM{
@@ -49,11 +54,18 @@ PROGRAM{
 
         test = 1 + 2 + 3 + 4
 
+        SERVO(servo1 at 90)
+
         if(1<2){
             test = test +1
 
-            while(4<5){
-                test = test +4
+            if(2<3){
+                test = test +2
+                SPI(test to C1)
+                while(3<4){
+                    test = test +3
+                    SERVO(servo1 at 90)
+                }
             }
         }
 
@@ -67,10 +79,7 @@ PROGRAM{
 
         while(4<5){
             test = test +4
-        }
-
-
-    
+        }    
 
     }
 

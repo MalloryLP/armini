@@ -40,7 +40,7 @@ class Parser:
     
     def parse_setup(self):
         setup = astClass.Setup()
-        while self.showNext().kind in ["PIN", "ADC", "SPI", "I2C", "SERIAL"]:
+        while self.showNext().kind in ["PIN", "ADC", "SPI", "I2C", "SERIAL", "SERVO"]:
             setup.instances.append(self.parse_instantiations())
         return setup
     
@@ -50,7 +50,7 @@ class Parser:
             main.dcls.append(self.parse_type_declarations())
         self.expect("LOOP")
         self.expect("LBRACE")
-        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
+        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI", "SERVO"]:
                 main.body.append(self.parse_statements())
         self.expect("RBRACE")
         return main
@@ -73,6 +73,8 @@ class Parser:
             statement = self.parse_i2c()
         elif CMP == "SPI":
             statement = self.parse_spi()
+        elif CMP == "SERVO":
+            statement = self.parse_servo()
         return statement
 
     def parse_spi(self):
@@ -120,9 +122,24 @@ class Parser:
             set_.level = CMP
         return set_
 
+    def parse_servo(self):
+        servo = astClass.SendServo()
+        self.expect("SERVO")
+        self.expect("LPAREN")
+        servo.name = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("AT")
+        CMP = self.showNext().kind
+        if CMP in ["INTEGER_LIT", "CHAR_LIT", "FLOAT_LIT", "IDENTIFIER"]:
+            if CMP == "IDENTIFIER":
+                servo.data = astClass.Ident(self.expect("IDENTIFIER"))
+            elif CMP == "INTEGER_LIT":
+                servo.data = astClass.IntLit(self.expect("INTEGER_LIT"))
+        self.expect("RPAREN")
+        return servo
+
     def parse_block(self):
         block = []
-        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
+        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI", "SERVO"]:
             block.append(self.parse_statements())
         return block
 
@@ -133,13 +150,13 @@ class Parser:
         if_.cond = self.parse_binary()
         self.expect("RPAREN")
         self.expect("LBRACE")
-        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
+        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI", "SERVO"]:
             if_.body = self.parse_block()
         self.expect("RBRACE")
         if self.showNext().kind == "ELSE":
             self.acceptIt()
             self.expect("LBRACE")
-            while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
+            while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI", "SERVO"]:
                 if_.else_ = self.parse_block()
             self.expect("RBRACE")
         return if_
@@ -151,7 +168,7 @@ class Parser:
         while_.cond = self.parse_binary()
         self.expect("RPAREN")
         self.expect("LBRACE")
-        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
+        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI", "SERVO"]:
             while_.body = self.parse_block()
         self.expect("RBRACE")
         return while_
@@ -245,6 +262,9 @@ class Parser:
         if CMP == "SERIAL":
             self.acceptIt()
             instance = self.parse_serial_declaration()
+        if CMP == "SERVO":
+            self.acceptIt()
+            instance = self.parse_servos_declaration()
         return instance
     
     def parse_pins_declaration(self):
@@ -279,17 +299,25 @@ class Parser:
         return spi
 
     def parse_i2cs_declaration(self):
-        spi = astClass.I2cInstance()
+        i2cs = astClass.I2cInstance()
         self.expect("LBRACE")
-        spi.name = astClass.Ident(self.expect("IDENTIFIER"))
+        i2cs.name = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("COLON")
-        spi.SCK = astClass.IntLit(self.expect("INTEGER_LIT"))
+        i2cs.SCK = astClass.IntLit(self.expect("INTEGER_LIT"))
         self.expect("COMMA")
-        spi.SCL = astClass.IntLit(self.expect("INTEGER_LIT"))
+        i2cs.SCL = astClass.IntLit(self.expect("INTEGER_LIT"))
         while self.showNext().kind == "new":
-            spi.dcls.append(self.parse_i2c_declaration())
+            i2cs.dcls.append(self.parse_i2c_declaration())
         self.expect("RBRACE")
-        return spi
+        return i2cs
+
+    def parse_servos_declaration(self):
+        servos = astClass.ServoInstance()
+        self.expect("LBRACE")
+        while self.showNext().kind == "new":
+            servos.dcls.append(self.parse_servo_declaration())
+        self.expect("RBRACE")
+        return servos
     
     def parse_pin_declaration(self):
         declaration = astClass.Pin()
@@ -336,4 +364,12 @@ class Parser:
         self.expect("LBRACE")
         declaration.bauds = astClass.AdressLit(self.expect("INTEGER_LIT"))
         self.expect("RBRACE")
+        return declaration
+
+    def parse_servo_declaration(self):
+        declaration = astClass.Servo()
+        self.expect("new")
+        declaration.name = astClass.Ident(self.expect("IDENTIFIER"))
+        self.expect("COLON")
+        declaration.pin = astClass.IntLit(self.expect("INTEGER_LIT"))
         return declaration
