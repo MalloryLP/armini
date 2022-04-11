@@ -1,6 +1,3 @@
-from ast import AST
-import re
-
 class ASTNode:
     def accept(self, next):
         class_name_camel_case = self.__class__.__name__
@@ -87,6 +84,40 @@ class Binary(ASTNode):
         self.op = op
         self.rhs = rhs
 
+class If(ASTNode):
+    def __init__(self, cond = None, body = [], else_ = []):
+        self.cond = cond 
+        self.body = body
+        self.else_ = else_
+
+class While(ASTNode):
+    def __init__(self, cond = None, body = []):
+        self.cond = cond 
+        self.body = body  
+
+class Set(ASTNode):
+    def __init__(self, pin = None, level = None):
+        self.pin = pin
+        self.level = level
+    
+class Read(ASTNode):
+    def __init__(self, data = None):
+        self.data = data
+
+class SendSerial(ASTNode):
+    def __init__(self, data = None):
+        self.data = data
+
+class SendI2c(ASTNode):
+    def __init__(self, data = None, slave = None):
+        self.data = data
+        self.slave = slave
+
+class SendSpi(ASTNode):
+    def __init__(self, data = None, slave = None):
+        self.data = data
+        self.slave = slave
+
 class IntLit(ASTNode):
     def __init__(self, token):
         self.token = token
@@ -104,5 +135,9 @@ class AnalogLit(ASTNode):
         self.token = token
 
 class AdressLit(ASTNode):
+    def __init__(self, token):
+        self.token = token
+
+class OpLit(ASTNode):
     def __init__(self, token):
         self.token = token
