@@ -85,15 +85,15 @@ class Binary(ASTNode):
         self.rhs = rhs
 
 class If(ASTNode):
-    def __init__(self, cond = None, body = [], else_ = []):
+    def __init__(self, cond = None, body = None, else_ = None):
         self.cond = cond 
         self.body = body
         self.else_ = else_
 
 class While(ASTNode):
-    def __init__(self, cond = None, body = []):
+    def __init__(self, cond = None, body = None):
         self.cond = cond 
-        self.body = body  
+        self.body = body
 
 class Set(ASTNode):
     def __init__(self, pin = None, level = None):

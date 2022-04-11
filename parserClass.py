@@ -51,13 +51,12 @@ class Parser:
         self.expect("LOOP")
         self.expect("LBRACE")
         while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
-            main.body.append(self.parse_statements())
+                main.body.append(self.parse_statements())
         self.expect("RBRACE")
         return main
 
     def parse_statements(self):
         CMP = self.showNext().kind
-        print(CMP)
         if CMP == "IDENTIFIER":
             statement = self.parse_assignation()
         elif CMP == "IF":
@@ -77,14 +76,14 @@ class Parser:
         return statement
 
     def parse_spi(self):
-        i2c = astClass.SendSpi()
+        spi = astClass.SendSpi()
         self.expect("SPI")
         self.expect("LPAREN")
-        i2c.data = astClass.Ident(self.expect("IDENTIFIER"))
+        spi.data = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("TO")
-        i2c.slave = astClass.Ident(self.expect("IDENTIFIER"))
+        spi.slave = astClass.Ident(self.expect("IDENTIFIER"))
         self.expect("RPAREN")
-        return i2c
+        return spi
 
     def parse_i2c(self):
         i2c = astClass.SendI2c()
@@ -121,6 +120,12 @@ class Parser:
             set_.level = CMP
         return set_
 
+    def parse_block(self):
+        block = []
+        while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
+            block.append(self.parse_statements())
+        return block
+
     def parse_if(self):
         if_ = astClass.If()
         self.acceptIt()
@@ -129,13 +134,13 @@ class Parser:
         self.expect("RPAREN")
         self.expect("LBRACE")
         while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
-            if_.body.append(self.parse_statements())
+            if_.body = self.parse_block()
         self.expect("RBRACE")
         if self.showNext().kind == "ELSE":
             self.acceptIt()
             self.expect("LBRACE")
             while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
-                if_.else_.append(self.parse_statements())
+                if_.else_ = self.parse_block()
             self.expect("RBRACE")
         return if_
 
@@ -147,7 +152,7 @@ class Parser:
         self.expect("RPAREN")
         self.expect("LBRACE")
         while self.showNext().kind in ["IDENTIFIER", "IF", "WHILE", "SET", "READ", "SERIAL", "I2C", "SPI"]:
-            while_.body.append(self.parse_statements())
+            while_.body = self.parse_block()
         self.expect("RBRACE")
         return while_
 

@@ -51,11 +51,22 @@ PROGRAM{
 
         if(1<2){
             test = test +1
+
+            while(4<5){
+                test = test +4
+            }
         }
 
         if(2<3){
             test = test +2
-            I2C(test to SLAVE1)
+        }
+
+        while(3<4){
+            test = test +3
+        }
+
+        while(4<5){
+            test = test +4
         }
 
 

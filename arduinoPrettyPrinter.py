@@ -56,6 +56,7 @@ class ArduinoVisitor():
     def visitWhile(self, while_):
         self.main += "\twhile("
         self.visit(while_.cond)
+        self.main += self.print
         self.main += "){\n"
         for stm in while_.body:
             self.main += "\t"
@@ -114,7 +115,7 @@ class ArduinoVisitor():
         self.visit(dcl.type)
         self.declarations += self.print + " "
         self.visit(dcl.name)
-        self.declarations += self.print + " "
+        self.declarations += self.print + "="
         self.visit(dcl.value)
         self.declarations += self.print + ";\n"
 
