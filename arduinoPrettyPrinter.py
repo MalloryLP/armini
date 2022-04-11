@@ -1,27 +1,23 @@
-from numpy import block
-
-
 class ArduinoVisitor():
     def __init__(self):
-        self.header = ""
-        self.defines = ""
-        self.declarations = ""
-        self.setup = "void setup(){\n"
-        self.loop = "void loop(){\n"
-
-        self.analog = {}
-
         self.print = ""
+        self.include = ""
+        self.define = ""
+        self.declarations = ""
 
-        self.debug = []
+        self.setup = "\nvoid setup(){\n"
+        self.main = "\nvoid loop(){\n"
+
+        self.file = None
+
+        self.tab = "\t"
 
     def pp(self, program):
         self.visitProgram(program)
-        self.print = self.header + "\n"+ self.defines + "\n" + self.declarations + "\n" + self.setup + self.loop
         print("\n============ ARDUINO PRETTY PRINTER ============\n")
-        print(self.print)
+        self.file = self.include + "\n" + self.define + "\n" + self.declarations + self.setup + "}\n" + self.main + "\n}"
+        print(self.file)
         print("\n========== END ARDUINO PRETTY PRINTER ==========\n")
-        print(self.debug)
 
     def visit(self, node):
         node.accept(self)
@@ -33,192 +29,193 @@ class ArduinoVisitor():
     def visitSetup(self, setup):
         for instance in setup.instances:
             self.visit(instance)
-        self.setup += "}\n\n"
 
     def visitMain(self, main):
-        for declaration in main.declarations:
-            self.visit(declaration)
-        for statement in main.statements:
-            self.visit(statement)
-            print("test")
-
-    def visitStatement(self, statement):
-        CMP = statement.type
-        self.debug.append(CMP)
-        self.loop += "\t"
-        if CMP == "read":
-            self.visit(statement.body)
-            self.analog[self.code] = self.code + "_value"
-            self.declarations += "int " + self.analog[self.code] + " = 0;\n"
-            self.loop += self.analog[self.code] + " = analogRead(" + self.code + ");\n"
-        elif CMP == "serial":
-            self.visit(statement.body)
-        elif CMP == "set":
-            self.visit(statement.body)
-        elif CMP == "if":
-            self.visit(statement.body)
-        elif CMP == "while":
-            self.visit(statement.body)
+        for dcl in main.dcls:
+            self.visit(dcl)
+        for stm in main.body:
+            self.visit(stm)
+            self.main += "\n"
 
     def visitIf(self, if_):
-        self.loop += "if("
+        self.main += self.tab + "if("
+        self.tab += "\t"
         self.visit(if_.cond)
-        for statement in if_.block:
-            self.loop += "\t"
-            self.visit(statement)
-        self.loop += "\t}"
-        if if_.else_ is not None:
-            self.loop += "else{\n"
-            for statement in if_.else_:
-                self.loop += "\t"
-                self.visit(statement)
-            self.loop += "\t}\n"
+        self.main += self.print
+        self.main += "){\n"
+        for stm in if_.body:
+            self.visit(stm)
+        self.tab = self.tab[:-1]
+        self.main += self.tab + "}"
+        if if_.else_:
+            self.main += "else{\n"
+            for stm in if_.else_:
+                self.visit(stm)
+            self.main += self.tab + "}"
+        else:
+            self.main += "\n"
 
     def visitWhile(self, while_):
-        self.loop += "while("
+        self.main += self.tab + "while("
+        self.tab += "\t"
         self.visit(while_.cond)
-        for statement in while_.block:
-            self.loop += "\t"
-            self.visit(statement)
-        self.loop += "\t}\n"
+        self.main += self.print
+        self.main += "){\n"
+        for stm in while_.body:
+            self.visit(stm)
+        self.tab = self.tab[:-1]
+        self.main += self.tab + "}\n"
 
-    def visitCond(self, cond):
-        self.visit(cond.lhs)
-        CMP = self.analog.get(self.code)
-        if CMP is not None:
-            self.loop += CMP
-        else:
-            self.loop += self.code
-        self.visit(cond.op)
-        self.loop += self.code
-        self.visit(cond.rhs)
-        self.loop += self.code + "){\n"
+    def visitRead(self, read):
+        self.visit(read.data)
+        self.declarations += "int " + self.print + "_value = 0;\n"
+        self.main += self.tab +  self.print + "_value = analogRead(" + self.print + ");\n"
 
-    def visitSetPin(self, pin):
-        self.visit(pin.ident)
-        self.loop += "digitalWrite("+ self.code + ","
+    def visitSet(self, set_):
+        self.visit(set_.pin)
+        self.main += self.tab + "digitalWrite(" + str(self.print) + "," + set_.level + ");\n"
+
+    def visitSendSerial(self, serial):
+        self.visit(serial.data)
+        self.main += self.tab + "Serial.print(" + self.print + "_value);\n"
+
+    def visitSendI2c(self, i2c):
+        self.visit(i2c.data)
+        data = self.print
+        self.visit(i2c.slave)
+        self.main += self.tab + "Wire.beginTransmission(" + self.print +");\n"
+        self.main += self.tab + "Wire.write(" + data +");\n"
+        self.main += self.tab + "Wire.endTransmission(" + self.print +");\n"
+
+    def visitSendSpi(self, spi):
+        self.visit(spi.slave)
+        self.main += self.tab + "digitalWrite(" + self.print + ",LOW);\n"
+        slave = self.print
+        self.visit(spi.data)
+        self.main += self.tab + "SPI.transfer(" + self.print +");\n"
+        self.main += self.tab + "digitalWrite(" + slave + ",HIGH);\n"
+
+    def visitSendServo(self, servo):
+        self.visit(servo.name)
+        self.main += self.tab + self.print + ".write("
+        self.visit(servo.data)
+        self.main += self.print +");\n"
+
+    def visitAssign(self, assign):
+        self.visit(assign.lhs)
+        self.main += self.tab + self.print
+        self.visit(assign.op)
+        self.main += self.print
+        self.visit(assign.rhs)
+        self.main += self.print
+        self.main += ";\n"
+
+    def visitBinary(self, binary):
+        self.visit(binary.lhs)
+        self.main += self.print
+        if binary.op:
+            self.visit(binary.op)
+            self.main += self.print
+            self.visit(binary.rhs)
+            
+
+    def visitDeclaration(self, dcl):
+        self.visit(dcl.type)
+        self.declarations += self.print + " "
+        self.visit(dcl.name)
+        self.declarations += self.print + "="
+        self.visit(dcl.value)
+        self.declarations += self.print + ";\n"
+
+    def visitPinInstance(self, instance):
+        for dcl in instance.dcls:
+            self.visit(dcl)
+
+    def visitAdcInstance(self, instance):
+        for dcl in instance.dcls:
+            self.visit(dcl)
+
+    def visitServoInstance(self, instance):
+        self.include += "#include <Servo.h>\n"
+        for dcl in instance.dcls:
+            self.visit(dcl)
+        self.declarations += "\n"
+
+    def visitSpiInstance(self, instance):
+        self.include += "#include <SPI.h>\n"
+        self.setup += "\n\tSPI.begin();\n"
+        self.visit(instance.name)
+        self.visit(instance.SCK)
+        self.visit(instance.MOSI)
+        self.visit(instance.MISO)
+        for dcl in instance.dcls:
+            self.visit(dcl)
+            self.setup += "\tdigitalWrite(" + self.print + ",HIGH);\n"
+
+    def visitI2cInstance(self, instance):
+        self.include += "#include <Wire.h>\n"
+        self.setup += "\n\tWire.begin();\n"
+        self.visit(instance.name)
+        self.visit(instance.SCK)
+        self.visit(instance.SCL)
+        for dcl in instance.dcls:
+            self.visit(dcl)
+
+    def visitPin(self, pin):
+        self.visit(pin.name)
+        self.define += "#define " + self.print + " "
+        self.setup += "\tpinMode(" + self.print + ","
+        self.visit(pin.nb)
+        self.define += self.print + "\n"
         self.visit(pin.level)
-        self.loop += self.code + ");\n"
+        self.setup += self.print + ");\n"
 
-    def visitPrintSerial(self, serial):
-        self.visit(serial.ident)
-        self.loop += "Serial.print(" + self.code + ");\n"
+    def visitAdc(self, pin):
+        self.visit(pin.name)
+        self.define += "#define " + self.print + " "
+        self.setup += "\tpinMode(" + self.print + ","
+        self.visit(pin.nb)
+        self.define += self.print + "\n"
+        self.visit(pin.level)
+        self.setup += self.print + ");\n"
 
-    def visitInstance(self, instance):
-        CMP = instance.type
-        if CMP == "PIN":
-            self.visit(instance.body)
-        elif CMP == "ADC":
-            self.visit(instance.body)
-        elif CMP == "SPI":
-            self.visit(instance.body)
-        elif CMP == "I2C":
-            self.visit(instance.body)
-        elif CMP == "SERIAL":
-            self.visit(instance.body)
+    def visitServo(self, servo):
+        self.visit(servo.name)
+        self.declarations += "Servo " + self.print + "\n"
+        self.setup += "\t" + self.print
+        self.visit(servo.pin)
+        self.setup += ".attach(" + self.print + ");\n"
 
-    def visitPINType(self, type):
-        for declaration in type.declarations:
-            self.visit(declaration)
+    def visitComponant(self, componant):
+        self.visit(componant.name)
+        name = self.print
+        self.define += "#define " + self.print + " "
+        self.setup += "\tpinMode(" + self.print + ", OUTPUT);\n"
+        self.visit(componant.nb)
+        self.define += self.print + "\n"
+        self.print = name
 
-    def visitADCType(self, type):
-        for declaration in type.declarations:
-            self.visit(declaration)
-
-    def visitSPIType(self, type):
-        self.visit(type.declaration)
-        for cs in type.cs:
-            self.visit(cs)
-
-    def visitI2CType(self, type):
-        self.visit(type.declaration)
-        for slave in type.slaves:
-            self.visit(slave)
-
-    def visitSERIALType(self, type):
-        self.visit(type.baud)
-        self.setup += "\tSerial.begin(" + self.code + ");\n"
-
-    def visitPINDeclaration(self, declaration):
-        self.defines += "#define "
-        self.setup += "\tpinMode("
-        self.visit(declaration.ident)
-        self.defines += self.code + " "
-        self.setup += self.code + ","
-        self.visit(declaration.pin)
-        self.defines += self.code + "\n"
-        self.visit(declaration.level)
-        self.setup += self.code + ");\n"
-
-    def visitSPIDeclaration(self, declaration):
-        self.header += "#include <SPI.h>\n"
-
-    def visitI2CDeclaration(self, declaration):
-        self.header += "#include <Wire.h>\n"
-        self.setup += "\tWire.begin();\n"
-
-    def visitCSDeclaration(self, cs):
-        self.defines += "#define "
-        self.visit(cs.ident)
-        self.defines += self.code + " "
-        self.visit(cs.pin)
-        self.defines += self.code + "\n"
-
-    def visitSlaveDeclaration(self, slave):
-        self.defines += "#define "
-        self.visit(slave.ident)
-        self.defines += self.code + " "
-        self.visit(slave.addr)
-        self.defines += self.code + "\n"
-
-    def visitDeclaration(self, declaration):
-        self.declarations += declaration.type + " "
-        self.visit(declaration.body)
-        self.declarations += ";\n"
-
-    def visitType(self, type):
-        self.visit(type.ident)
-        self.declarations += self.code + " = "
-        self.visit(type.value)
-        self.declarations += self.code
-
-    def visitAssignation(self, assignation):
-        self.visit(assignation.lhs)
-        self.loop += "\t" + self.code + " = "
-        self.visit(assignation.exp)
-    
-    def visitExpression(self, exp):
-        self.visit(exp.lhs)
-        self.loop += self.code
-        if exp.op is not None:
-            self.visit(exp.op)
-            self.loop += self.code
-        if exp.rhs is not None:
-            self.visit(exp.rhs)
-            self.loop += self.code
-        self.loop += ";\n"
-
+    def visitSerial(self, serial):
+        self.visit(serial.bauds)
+        self.setup += "\n\tSerial.begin(" + self.print + ");\n\n"
+        
     def visitIdent(self, ident):
-        self.code = ident.token
+        self.print = ident.token
 
     def visitIntLit(self, int):
-        self.code = int.token
+        self.print = int.token
 
-    def visitFloatLit(self, float):
-        self.code = float.token
+    def visitCharLit(self, int):
+        self.print = int.token
 
-    def visitCharLit(self, char):
-        self.code = char.token
+    def visitFloatLit(self, int):
+        self.print = int.token
 
-    def visitAnalogLit(self, analog):
-        self.code = analog.token
+    def visitAnalogLit(self, int):
+        self.print = int.token
 
-    def visitLevelLit(self, level):
-        self.code = level.token
+    def visitAdressLit(self, int):
+        self.print = int.token
 
-    def visitAdressLit(self, addr):
-        self.code = addr.token
-
-    def visitOpLit(self, addr):
-        self.code = addr.token
-    
+    def visitOpLit(self, int):
+        self.print = int.token

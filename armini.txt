@@ -7,6 +7,7 @@ SETUP{
 
     ADC{
         new ANALOG1 : A0, INPUT
+        new ANALOG2 : A1, INPUT
     }
 
     SPI{
@@ -25,34 +26,60 @@ SETUP{
         9600
     }
 
+    SERVO{
+        new servo1 : 4
+        new servo2 : 5 
+    }
+
 }
 
 PROGRAM{
-
-    int test = 2
-    float x = 3.2
-    int pc = 0
-    char pc = "a"
-    int tab[2] = 3
+    int test = 1
+    char index = "a"
+    float pc = 1.7
 
     LOOP{
-        if(12 != 12){
-            toto = 3 + toto
-            truc = 4
-            truc = toto
-            read ANALOG1
-        }else{
-            tutu = 7 + kjbsdvkjs
+
+        test = test + 12
+
+        set LED1 to HIGH
+
+        read ANALOG1
+        
+        SERIAL(ANALOG1)
+
+        I2C(test to SLAVE1)
+
+        SPI(test to C1)
+
+        test = 1 + 2 + 3 + 4
+
+        SERVO(servo1 at 90)
+
+        if(1<2){
+            test = test +1
+
+            if(2<3){
+                test = test +2
+                SPI(test to C1)
+                while(3<4){
+                    test = test +3
+                    SERVO(servo1 at 90)
+                }
+            }
         }
 
-        while(12 != 12)
-        {
-            toto = 3 + toto
-            truc = 4
-            truc = toto
-            read ANALOG1
+        if(2<3){
+            test = test +2
         }
-        
+
+        while(3<4){
+            test = test +3
+        }
+
+        while(4<5){
+            test = test +4
+        }    
 
     }
 
