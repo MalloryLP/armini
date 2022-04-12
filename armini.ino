@@ -45,35 +45,30 @@ void setup(){
 
 void loop(){
 	test=test+12;
-
 	digitalWrite(LED1,HIGH);
-
 	ANALOG1_value = analogRead(ANALOG1);
-
 	Serial.print(ANALOG1_value);
-
 	Wire.beginTransmission(SLAVE1);
 	Wire.write(test);
 	Wire.endTransmission(SLAVE1);
-
 	digitalWrite(C1,LOW);
 	SPI.transfer(test);
 	digitalWrite(C1,HIGH);
-
 	test=1+2+3+4;
-
 	servo1.write(90);
+	servo2.write(210);
 
 	if(1<2){
 		test=test+1;
+
 		if(2<3){
 			test=test+2;
 			digitalWrite(C1,LOW);
 			SPI.transfer(test);
 			digitalWrite(C1,HIGH);
+
 			while(3<4){
 				test=test+3;
-				servo1.write(90);
 			}
 		}
 	}
@@ -89,6 +84,5 @@ void loop(){
 	while(4<5){
 		test=test+4;
 	}
-
 
 }

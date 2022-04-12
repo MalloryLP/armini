@@ -35,10 +35,10 @@ class ArduinoVisitor():
             self.visit(dcl)
         for stm in main.body:
             self.visit(stm)
-            self.main += "\n"
+            #self.main += "\n"
 
     def visitIf(self, if_):
-        self.main += self.tab + "if("
+        self.main += "\n" + self.tab + "if("
         self.tab += "\t"
         self.visit(if_.cond)
         self.main += self.print
@@ -56,7 +56,7 @@ class ArduinoVisitor():
             self.main += "\n"
 
     def visitWhile(self, while_):
-        self.main += self.tab + "while("
+        self.main += "\n" + self.tab + "while("
         self.tab += "\t"
         self.visit(while_.cond)
         self.main += self.print

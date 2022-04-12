@@ -55,6 +55,7 @@ PROGRAM{
         test = 1 + 2 + 3 + 4
 
         SERVO(servo1 at 90)
+        SERVO(servo2 at 210)
 
         if(1<2){
             test = test +1
@@ -64,7 +65,6 @@ PROGRAM{
                 SPI(test to C1)
                 while(3<4){
                     test = test +3
-                    SERVO(servo1 at 90)
                 }
             }
         }
