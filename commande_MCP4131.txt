@@ -1,0 +1,41 @@
+SETUP{
+
+    ADC{
+        new MCP4131Voltage : A0, INPUT
+    }
+
+    SPI{
+        SPI1 : 13, 12, 11
+        new MCP4131 : 10
+    }
+
+    SERIAL{
+        9600
+    }
+
+}
+
+PROGRAM{
+
+    int cmdVoltage = 0
+
+    LOOP{
+
+        while(cmdVoltage < 128){
+            SPI(cmdVoltage to MCP4131)
+            read MCP4131Voltage
+            SERIAL(MCP4131Voltage)
+            cmdVoltage = cmdVoltage + 1 
+        }
+
+        while(cmdVoltage > 0){
+            SPI(cmdVoltage to MCP4131)
+            read MCP4131Voltage
+            SERIAL(MCP4131Voltage)
+            cmdVoltage = cmdVoltage - 1 
+        }
+
+    }
+}
+
+

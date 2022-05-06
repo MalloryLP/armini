@@ -1,0 +1,30 @@
+SETUP{
+
+    I2C{
+        I2C1 : 19, 18
+        new PCF8574 : 0x20
+    }
+
+}
+
+PROGRAM{
+
+    int P1 = 254
+    int P2 = 253
+    int P3 = 251
+    int P4 = 247
+    int reset = 255
+
+    LOOP{
+
+        I2C(reset to PCF8574)
+        I2C(P1 to PCF8574)
+        I2C(P2 to PCF8574)
+        I2C(P3 to PCF8574)
+        I2C(P4 to PCF8574)
+
+    }
+
+}
+
+

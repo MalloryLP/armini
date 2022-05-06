@@ -1,9 +1,12 @@
 class ArduinoVisitor():
     def __init__(self):
         self.print = ""
-        self.include = ""
+        self.include = "/*\n *This program was generated from an Armini program.\n *Feel free to modify this Arduino program to overcom \n *the limitations of the Armini programming.\n*/\n\n"
         self.define = ""
         self.declarations = ""
+
+        self.analogs = []
+        self.pins = []
 
         self.setup = "\nvoid setup(){\n"
         self.main = "\nvoid loop(){\n"
@@ -14,10 +17,7 @@ class ArduinoVisitor():
 
     def pp(self, program):
         self.visitProgram(program)
-        print("\n============ ARDUINO PRETTY PRINTER ============\n")
-        self.file = self.include + "\n" + self.define + "\n" + self.declarations + self.setup + "}\n" + self.main + "\n}"
-        print(self.file)
-        print("\n========== END ARDUINO PRETTY PRINTER ==========\n")
+        self.file = self.include + "\n" + self.define + "\n" + self.declarations + self.setup + "}\n" + self.main + "}"
 
     def visit(self, node):
         node.accept(self)
@@ -68,8 +68,12 @@ class ArduinoVisitor():
 
     def visitRead(self, read):
         self.visit(read.data)
-        self.declarations += "int " + self.print + "_value = 0;\n"
-        self.main += self.tab +  self.print + "_value = analogRead(" + self.print + ");\n"
+        if self.print + "_value" not in self.declarations:
+            self.declarations += "int " + self.print + "_value = 0;\n"
+        if self.print in self.analogs:
+            self.main += self.tab +  self.print + "_value = analogRead(" + self.print + ");\n"
+        else:
+            self.main += self.tab +  self.print + "_value = digitalRead(" + self.print + ");\n"
 
     def visitSet(self, set_):
         self.visit(set_.pin)
@@ -99,7 +103,7 @@ class ArduinoVisitor():
         self.visit(servo.name)
         self.main += self.tab + self.print + ".write("
         self.visit(servo.data)
-        self.main += self.print +");\n"
+        self.main += self.print +"_value);\n"
 
     def visitAssign(self, assign):
         self.visit(assign.lhs)
@@ -112,11 +116,16 @@ class ArduinoVisitor():
 
     def visitBinary(self, binary):
         self.visit(binary.lhs)
-        self.main += self.print
-        if binary.op:
+        if self.print in self.analogs:
+            self.main += self.print + "_value"
+        else:
+            self.main += self.print
+        if binary.op is not None:
             self.visit(binary.op)
             self.main += self.print
             self.visit(binary.rhs)
+        else:
+            self.print = ""
             
 
     def visitDeclaration(self, dcl):
@@ -165,6 +174,7 @@ class ArduinoVisitor():
         self.visit(pin.name)
         self.define += "#define " + self.print + " "
         self.setup += "\tpinMode(" + self.print + ","
+        self.pins.append(self.print)
         self.visit(pin.nb)
         self.define += self.print + "\n"
         self.visit(pin.level)
@@ -173,6 +183,7 @@ class ArduinoVisitor():
     def visitAdc(self, pin):
         self.visit(pin.name)
         self.define += "#define " + self.print + " "
+        self.analogs.append(self.print)
         self.setup += "\tpinMode(" + self.print + ","
         self.visit(pin.nb)
         self.define += self.print + "\n"
@@ -190,7 +201,7 @@ class ArduinoVisitor():
         self.visit(componant.name)
         name = self.print
         self.define += "#define " + self.print + " "
-        self.setup += "\tpinMode(" + self.print + ", OUTPUT);\n"
+        #self.setup += "\tpinMode(" + self.print + ", OUTPUT);\n"
         self.visit(componant.nb)
         self.define += self.print + "\n"
         self.print = name

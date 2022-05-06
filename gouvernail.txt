@@ -1,0 +1,47 @@
+SETUP{
+
+    ADC{
+        new Barre : A0, INPUT
+    }
+    SERVO{
+        new Gouvernail : 2
+    }
+    SERIAL{
+        9600
+    }
+    PIN{
+        new Babord : 3, OUTPUT
+        new Tribord : 4, OUTPUT
+    }
+
+}
+
+PROGRAM{
+
+    float coef = 5.7
+
+    int pos = 0
+
+    LOOP{
+
+        read Barre
+
+        SERIAL(Barre)
+
+        pos = Barre / coef
+
+        SERVO(Gouvernail at pos)
+
+        if(pos < 10){
+            set Babord to HIGH
+            set Tribord to LOW
+        }
+
+        if(pos > 170){
+            set Babord to LOW
+            set Tribord to HIGH
+        }
+
+    }
+
+}
